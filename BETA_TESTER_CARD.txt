@@ -1,0 +1,20 @@
+FReek Beta Tester
+
+Your mission: TRY TO BREAK FReek.
+
+1. Open the FReek beta link.
+2. Create or Join a game.
+3. Choose 10+ photos/videos.
+4. Pick a number.
+5. On the other phone, try FR PEEK.
+6. Try the same number again and use EEK SNEEK.
+7. Try to catch each other.
+8. Try bad Wi-Fi, switching apps, videos, ending/restarting, and repeated numbers.
+
+Report:
+- What happened?
+- What did you expect?
+- What actually happened?
+- Screenshot/video if possible.
+
+The goal is NOT to be nice. Find the bugs.

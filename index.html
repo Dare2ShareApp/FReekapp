@@ -1,0 +1,184 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#070914">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<link rel="apple-touch-icon" href="icon-180.png">
+<link rel="manifest" href="manifest.json">
+<title>FReek — Wanna get FReeky?</title>
+<script src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js"></script>
+<style>
+:root{--bg:#070914;--card:#10172b;--line:#293651;--blue:#159dff;--pink:#f52bba;--muted:#9ca8c0}
+*{box-sizing:border-box}body{margin:0;background:radial-gradient(circle at 50% -10%,#14264b 0,#070914 45%);color:#fff;font-family:-apple-system,BlinkMacSystemFont,"SF Pro Display","Segoe UI",sans-serif}
+.app{max-width:540px;margin:auto;padding:18px 15px 42px}.brand{text-align:center;font-size:44px;font-weight:950;letter-spacing:-3px;text-shadow:0 0 22px #168cff55}.fr{color:var(--blue)}.eek{color:var(--pink)}.tag{text-align:center;color:#d9deea;font-weight:700;margin:0 0 18px}
+.card{background:linear-gradient(180deg,#121a30,#0d1324);border:1px solid var(--line);border-radius:24px;padding:18px;margin:12px 0;box-shadow:0 12px 35px #0007}.hero{text-align:center;padding:24px 18px}.hero h1{font-size:30px;line-height:1.05;margin:0 0 9px}.hero p{color:var(--muted);line-height:1.45;margin:0}
+h2{font-size:23px;margin:0 0 8px}.muted{color:var(--muted);line-height:1.45}.small{font-size:12px;color:#7f8aa3;line-height:1.45}
+input{width:100%;background:#070b15;border:1px solid #35425e;color:#fff;border-radius:15px;padding:15px;font-size:17px;margin-top:9px;outline:none}input:focus{border-color:var(--blue)}
+.btn{display:block;width:100%;border:0;border-radius:16px;padding:16px;margin-top:10px;color:#fff;font-size:16px;font-weight:900;background:linear-gradient(135deg,#1179ff,#20b8ff);box-shadow:0 8px 20px #0d8cff30}.pink{background:linear-gradient(135deg,#f51b9f,#9b48ff)}.dark{background:#1a2339;border:1px solid #3a4763}.danger{background:#251426;border:1px solid #653451}
+.row{display:grid;grid-template-columns:1fr 1fr;gap:9px}.hidden{display:none!important}.status{border-radius:15px;padding:13px;background:#080e1c;border:1px solid #24304a}.ok{color:#58e5a0}.code{font-size:31px;font-weight:950;letter-spacing:5px;text-align:center;background:#080c17;border-radius:16px;padding:15px;margin:12px 0}
+.pill{display:inline-block;background:#1b2944;color:#c5d0e4;border-radius:999px;padding:7px 10px;font-size:12px;font-weight:900}.number{font-size:76px;text-align:center;font-weight:950;letter-spacing:-4px;color:#fff;text-shadow:0 0 25px #149cff99;margin:5px}.media{display:block;width:100%;max-height:400px;object-fit:contain;background:#03050a;border-radius:18px;margin-top:12px}.center{text-align:center}.choice{font-size:14px;font-weight:800}.spin{animation:pulse 1.5s infinite}@keyframes pulse{50%{opacity:.45}}
+.rules{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-top:14px}.rule{background:#0b1120;border:1px solid #202c45;border-radius:15px;padding:11px;font-size:12px;color:#aab5ca}.rule b{display:block;color:#fff;margin-bottom:4px}.blue{color:var(--blue)}.pinkText{color:#ff62d0}
+</style>
+</head>
+<body>
+<div class="app">
+  <div class="brand"><span class="fr">FR</span><span class="eek">eek</span></div>
+  <div class="tag">Wanna get FReeky? 👀</div>
+
+  <section id="home" class="card hero">
+    <h1>Pick a number.<br>FReek picks the photo.</h1>
+    <p>Your friend chooses a number from your camera roll. You decide whether they get the real one — or you secretly EEK SNEEK.</p>
+    <input id="name" maxlength="24" placeholder="Your name">
+    <div class="row">
+      <button class="btn" onclick="createGame()">CREATE FReek</button>
+      <button class="btn pink" onclick="show('joinBox')">JOIN FReek</button>
+    </div>
+    <div id="joinBox" class="hidden">
+      <input id="joinCode" placeholder="Paste the game code">
+      <button class="btn pink" onclick="joinGame()">JOIN NOW</button>
+    </div>
+    <div class="rules">
+      <div class="rule"><b class="blue">FR PEEK</b>Send the real pick.</div>
+      <div class="rule"><b class="pinkText">EEK SNEEK</b>Secretly swap it.</div>
+    </div>
+  </section>
+
+  <section id="game" class="hidden">
+    <div class="card">
+      <span class="pill">FReek with <span id="otherName">your friend</span></span>
+      <div id="status" class="status" style="margin-top:10px">Connecting…</div>
+    </div>
+
+    <div id="library" class="card">
+      <h2>Your FReek pool</h2>
+      <p class="muted">Choose the photos/videos you want available for this game. The beta never uploads your whole camera roll.</p>
+      <input id="media" type="file" accept="image/*,video/*" multiple>
+      <div id="libraryInfo" class="small" style="margin-top:9px">0 items selected.</div>
+    </div>
+
+    <div id="invite" class="card hidden center">
+      <h2>Send this code</h2>
+      <div id="code" class="code">--------</div>
+      <button class="btn dark" onclick="copyCode()">COPY CODE</button>
+      <p class="small">Your friend opens the same FReek beta and taps JOIN FReek.</p>
+    </div>
+
+    <div id="pick" class="card hidden">
+      <span class="pill">Your turn</span>
+      <h2 style="margin-top:12px">Pick any number.</h2>
+      <p class="muted">Pick the same number again if you want. 👀</p>
+      <input id="num" type="number" min="1" placeholder="47">
+      <button class="btn" onclick="requestNumber()">PICK <span id="numLabel">47</span></button>
+    </div>
+
+    <div id="waiting" class="card hidden center">
+      <h2 class="spin">They're FReeking… 👀</h2>
+      <p class="muted">Your friend is choosing a number.</p>
+    </div>
+
+    <div id="decision" class="card hidden">
+      <span class="pill">They picked <span id="requested">#47</span></span>
+      <h2 style="margin-top:12px">You decide.</h2>
+      <div id="requestedMedia"></div>
+      <button class="btn" onclick="peek()">FR PEEK — SEND THE REAL ONE 📸</button>
+      <button class="btn pink" onclick="sneek()">EEK SNEEK — 3 NEW OPTIONS · $0.99 😈</button>
+      <p class="small">Beta note: payment is simulated for testing. The other player is not told whether you sneeked.</p>
+    </div>
+
+    <div id="receive" class="card hidden">
+      <span class="pill">FReek received 👀</span>
+      <h2 id="receivedTitle" style="margin-top:12px">You got a FReek.</h2>
+      <div id="receivedMedia"></div>
+      <button class="btn" onclick="myTurn()">PICK A NUMBER</button>
+    </div>
+
+    <div class="card">
+      <button class="btn danger" onclick="endGame()">END FReek & CLEAR MEDIA</button>
+    </div>
+  </section>
+
+  <div class="small center">FReek Beta 0.2 · Test build · Please report anything confusing or broken.</div>
+</div>
+
+<script>
+const S={role:null,name:"",other:"Friend",peer:null,conn:null,media:[],urls:[],code:"",requested:0,incoming:null};
+const $=id=>document.getElementById(id);
+function show(id,on=true){$(id).classList.toggle("hidden",!on)}
+function status(t){$("status").textContent=t}
+function clean(){S.urls.forEach(u=>URL.revokeObjectURL(u));S.urls=[]}
+function msg(t){alert(t)}
+function setup(c){
+  S.conn=c;
+  c.on("open",()=>{c.send({t:"hello",name:S.name});status("Connected ✓");if(S.role==="host"){show("invite",true);show("pick",true)}else show("waiting",true)});
+  c.on("data",d=>{
+    if(d instanceof ArrayBuffer || d instanceof Blob){if(S.incoming){S.incoming.parts.push(d);S.incoming.got+=d.byteLength||d.size||0;if(S.incoming.got>=S.incoming.size)finishIncoming()}return}
+    if(d.t==="hello"){$("otherName").textContent=d.name||"Friend";S.other=d.name||"Friend"}
+    if(d.t==="number"){
+      S.requested=d.n;$("requested").textContent="#"+d.n;show("pick",false);show("waiting",false);
+      const f=S.media[d.n-1];
+      $("requestedMedia").innerHTML="";
+      if(f)render(f,"requestedMedia");else $("requestedMedia").innerHTML="<p class='muted'>You don't have that many items in your selected pool.</p>";
+      show("decision",true);
+    }
+    if(d.t==="start"){S.incoming={type:d.type,size:d.size,got:0,parts:[]};}
+    if(d.t==="end"){if(S.incoming)finishIncoming()}
+    if(d.t==="freek"){show("decision",false);show("waiting",false);show("receive",true);$("receivedTitle").textContent=(d.name||S.other)+" sent you a FReek 👀"}
+    if(d.t==="turn"){show("receive",false);show("pick",true)}
+    if(d.t==="endgame"){cleanup(false);msg("The FReek ended. Media was cleared.")}
+  });
+  c.on("close",()=>status("Connection closed"));
+}
+function createGame(){
+  S.name=$("name").value.trim()||"Player 1";S.role="host";S.peer=new Peer(undefined,{debug:0});
+  S.peer.on("open",id=>{S.code=id; $("code").textContent=id.slice(-8).toUpperCase();show("home",false);show("game",true);show("invite",true);status("Waiting for your friend…")});
+  S.peer.on("connection",setup);S.peer.on("error",e=>status("Connection error: "+e.type));
+}
+function joinGame(){
+  S.name=$("name").value.trim()||"Player 2";const id=$("joinCode").value.trim();if(!id)return msg("Paste the game code.");
+  S.role="join";S.peer=new Peer(undefined,{debug:0});S.peer.on("open",()=>setup(S.peer.connect(id,{reliable:true})));
+  S.peer.on("error",e=>msg("Couldn't connect. Check the code and try again."));
+  show("home",false);show("game",true);status("Connecting…");
+}
+$("media").addEventListener("change",e=>{clean();S.media=Array.from(e.target.files||[]).filter(f=>f.type.startsWith("image/")||f.type.startsWith("video/"));$("libraryInfo").textContent=S.media.length+" items selected. #1 is the first selected item.";$("num").max=S.media.length});
+$("num").addEventListener("input",()=>{$("numLabel").textContent=$("num").value||"47"});
+function requestNumber(){
+  const n=parseInt($("num").value,10);if(!S.conn?.open)return msg("Waiting for your friend to connect.");if(!n||n<1||n>S.media.length)return msg("Pick a number from 1 to "+S.media.length+".");
+  S.conn.send({t:"number",n});show("pick",false);show("waiting",true);
+}
+function render(file,target){
+  const u=URL.createObjectURL(file);S.urls.push(u);
+  $(target).innerHTML=file.type.startsWith("video/")?`<video class="media" src="${u}" controls playsinline></video>`:`<img class="media" src="${u}" alt="FReek preview">`;
+}
+function peek(){const f=S.media[S.requested-1];if(!f)return msg("That number isn't in your selected pool.");send(f)}
+function sneek(){
+  if(!S.media.length)return;
+  let candidates=S.media.map((_,i)=>i).filter(i=>i!==S.requested-1);
+  if(!candidates.length)return msg("Add at least 2 items to use EEK SNEEK.");
+  // Simulated $0.99 beta unlock, then choose one of 3 different options.
+  candidates.sort(()=>Math.random()-0.5);const options=candidates.slice(0,Math.min(3,candidates.length));
+  let text="EEK SNEEK · $0.99 beta unlock\\n\\nPick an option:\\n"+options.map((i,k)=>`${k+1}. Item #${i+1}`).join("\\n");
+  const pick=prompt(text,"1");const n=parseInt(pick,10)-1;if(n<0||n>=options.length)return;
+  send(S.media[options[n]]);
+}
+async function send(file){
+  if(file.size>14*1024*1024)return msg("Beta limit: that file is over 14 MB. Try a smaller item.");
+  const buf=await file.arrayBuffer(),chunk=16*1024;S.conn.send({t:"start",type:file.type,size:buf.byteLength});
+  for(let p=0;p<buf.byteLength;p+=chunk)S.conn.send(buf.slice(p,Math.min(p+chunk,buf.byteLength)));
+  S.conn.send({t:"end",name:S.name});
+  S.conn.send({t:"freek",name:S.name});show("decision",false);show("waiting",true);
+}
+function finishIncoming(){
+  const b=new Blob(S.incoming.parts,{type:S.incoming.type}),u=URL.createObjectURL(b);S.urls.push(u);
+  $("receivedMedia").innerHTML=S.incoming.type.startsWith("video/")?`<video class="media" src="${u}" controls playsinline></video>`:`<img class="media" src="${u}" alt="Received FReek">`;
+  S.incoming=null;
+}
+function myTurn(){show("receive",false);show("pick",true);S.conn?.send({t:"turn"})}
+function copyCode(){navigator.clipboard?.writeText(S.code).then(()=>msg("Game code copied."))}
+function endGame(){if(confirm("End this FReek? Both players will be told and local media selections will be cleared.")){S.conn?.send({t:"endgame"});cleanup(true)}}
+function cleanup(back){clean();S.media=[];$("media").value="";$("libraryInfo").textContent="0 items selected.";S.conn?.close();S.peer?.destroy();if(back){show("game",false);show("home",true)}}
+</script>
+</body>
+</html>
