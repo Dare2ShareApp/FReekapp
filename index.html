@@ -8,7 +8,7 @@
 <link rel="apple-touch-icon" href="icon-180.png">
 <link rel="manifest" href="manifest.json">
 <title>FReek Beta 0.3</title>
-<script src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js"></script>
+
 <style>
 :root{
  --bg:#070711;--panel:#10101d;--panel2:#151427;--line:#34324e;
@@ -112,7 +112,13 @@ input:focus{border-color:var(--blue);box-shadow:0 0 0 4px #159dff16}
 #wheelWrap{filter:drop-shadow(0 14px 30px #0008)}
 #turnWheel:before{content:"";position:absolute}
 </style>
-</head>
+<script>
+window.loadPeerJS=function(){
+ if(window.Peer)return Promise.resolve();
+ const urls=["https://cdnjs.cloudflare.com/ajax/libs/peerjs/1.5.4/peerjs.min.js","https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js","https://cdn.jsdelivr.net/npm/peerjs@1.5.4/dist/peerjs.min.js"];
+ return new Promise((resolve,reject)=>{let i=0;function next(){if(window.Peer)return resolve();if(i>=urls.length)return reject(new Error("PeerJS unavailable"));const s=document.createElement("script");s.src=urls[i++]+"?v=0.8";s.onload=()=>window.Peer?resolve():next();s.onerror=next;document.head.appendChild(s)}next()});
+};
+</script></head>
 <body>
 <div class="app">
   <div class="top"><div class="logo"><span class="fr">FR</span><span class="eek">eek</span></div><div class="mascot">👀</div></div>
@@ -123,7 +129,7 @@ input:focus{border-color:var(--blue);box-shadow:0 0 0 4px #159dff16}
     <p>Take turns. They pick a number from <b>your</b> pool. Then you decide how brave you feel. 😈</p>
     <input id="name" maxlength="24" placeholder="Your name">
     <div class="row">
-      <button class="btn" onclick="createGame()">CREATE FReek</button>
+      <button class="btn" id="createBtn" onclick="createGame()">CREATE FReek</button>
       <button class="btn pink" onclick="show('joinBox')">JOIN FReek</button>
     </div>
     <div id="joinBox" class="hidden">
@@ -226,7 +232,7 @@ input:focus{border-color:var(--blue);box-shadow:0 0 0 4px #159dff16}
     <button class="btn danger" onclick="endGame()">END FReek</button>
   </section>
 
-  <div class="small center">FReek Beta 0.6 · Turn Wheel + Turn Engine</div>
+  <div class="small center">FReek Beta 0.8 · Hardened Create</div>
 </div>
 
 <script>
@@ -299,53 +305,37 @@ function onData(d){
  if(d.t==="endgame"){cleanup();msg("The FReek ended.")}
 }
 function csend(x){if(S.conn?.open)S.conn.send(x)}
-function createGame(){
- if(typeof Peer === "undefined") return msg("FReek could not load its connection service. Reload the page and try again.");
- S.name=$("name").value.trim()||"Player 1";S.role="host";
- S.peer=new Peer(undefined,{
-  debug:0,
-  config:{
-    iceServers:[
-      {urls:"stun:stun.l.google.com:19302"},
-      {urls:"turn:openrelay.metered.ca:80",username:"openrelayproject",credential:"openrelayproject"},
-      {urls:"turn:openrelay.metered.ca:443",username:"openrelayproject",credential:"openrelayproject"},
-      {urls:"turn:openrelay.metered.ca:443?transport=tcp",username:"openrelayproject",credential:"openrelayproject"}
-    ],
-    iceTransportPolicy:"all"
-  }
-});
- S.peer.on("open",id=>{
-   S.code=id;S.inviteUrl=makeInvite(id);$("inviteText").value=S.inviteUrl;
-   show("home",false);show("game",true);setStatus("Waiting for your friend…");
- });
- S.peer.on("connection",setupConnection);
- S.peer.on("error",e=>setStatus("Connection error: "+e.type+" — retrying network path…"));
+async function createGame(){
+ const btn=$("createBtn"); if(btn){btn.disabled=true;btn.textContent="STARTING…"}
+ S.name=$("name").value.trim()||"Player 1"; show("home",false);show("game",true);setStatus("Starting your FReek…");
+ try{
+  await window.loadPeerJS(); if(typeof Peer!=="function")throw new Error("PeerJS unavailable");
+  S.role="host";
+  S.peer=new Peer(undefined,{host:"0.peerjs.com",port:443,path:"/",secure:true,debug:0,config:{iceServers:[
+   {urls:"stun:stun.l.google.com:19302"},
+   {urls:"turn:openrelay.metered.ca:80",username:"openrelayproject",credential:"openrelayproject"},
+   {urls:"turn:openrelay.metered.ca:443",username:"openrelayproject",credential:"openrelayproject"},
+   {urls:"turn:openrelay.metered.ca:443?transport=tcp",username:"openrelayproject",credential:"openrelayproject"}]}});
+  S.peer.on("open",id=>{S.code=id;S.inviteUrl=makeInvite(id);$("inviteText").value=S.inviteUrl;setStatus("FReek created ✓ Waiting for your friend…");show("inviteBox",true)});
+  S.peer.on("connection",setupConnection);
+  S.peer.on("error",e=>setStatus("FReek connection error: "+e.type));
+ }catch(e){console.error(e);show("home",true);show("game",false);setStatus("Couldn't start FReek. Reload and try again.");if(btn){btn.disabled=false;btn.textContent="CREATE FReek"}}
 }
-function joinGame(){
- if(typeof Peer === "undefined") return msg("FReek could not load its connection service. Reload the page and try again.");
- S.name=$("name").value.trim()||"Player 2";
- let raw=$("joinCode").value.trim();
+async function joinGame(){
+ S.name=$("name").value.trim()||"Player 2";let raw=$("joinCode").value.trim();
  if(!raw)return msg("Paste the FReek invite link or full connection code.");
  try{let u=new URL(raw);raw=u.searchParams.get("join")||raw}catch(e){}
- S.role="guest";
- S.peer=new Peer(undefined,{
-  debug:0,
-  config:{
-    iceServers:[
-      {urls:"stun:stun.l.google.com:19302"},
-      {urls:"turn:openrelay.metered.ca:80",username:"openrelayproject",credential:"openrelayproject"},
-      {urls:"turn:openrelay.metered.ca:443",username:"openrelayproject",credential:"openrelayproject"},
-      {urls:"turn:openrelay.metered.ca:443?transport=tcp",username:"openrelayproject",credential:"openrelayproject"}
-    ],
-    iceTransportPolicy:"all"
-  }
-});
- S.peer.on("open",()=>{
-  const c=S.peer.connect(raw,{reliable:true,serialization:"binary",metadata:{app:"FReek",version:"0.5"}});
-  setupConnection(c);
-});
- S.peer.on("error",e=>msg("Couldn't connect. Paste the full invite link/code again."));
- show("home",false);show("game",true);setStatus("Connecting…");
+ show("home",false);show("game",true);setStatus("Connecting to FReek…");
+ try{
+  await window.loadPeerJS();if(typeof Peer!=="function")throw new Error("PeerJS unavailable");S.role="guest";
+  S.peer=new Peer(undefined,{host:"0.peerjs.com",port:443,path:"/",secure:true,debug:0,config:{iceServers:[
+   {urls:"stun:stun.l.google.com:19302"},
+   {urls:"turn:openrelay.metered.ca:80",username:"openrelayproject",credential:"openrelayproject"},
+   {urls:"turn:openrelay.metered.ca:443",username:"openrelayproject",credential:"openrelayproject"},
+   {urls:"turn:openrelay.metered.ca:443?transport=tcp",username:"openrelayproject",credential:"openrelayproject"}]}});
+  S.peer.on("open",()=>setupConnection(S.peer.connect(raw,{reliable:true,serialization:"binary",metadata:{app:"FReek",version:"0.8"}})));
+  S.peer.on("error",e=>setStatus("Connection error: "+e.type));
+ }catch(e){console.error(e);setStatus("Couldn't connect. Check the invite and reload.")}
 }
 
 function readyUp(){
