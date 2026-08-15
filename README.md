@@ -1,4 +1,4 @@
-# FReek Beta 0.4 — Fun UI
+# FReek Beta 0.5 — Connection Fix
 
 This build fixes the biggest beta problems from 0.2:
 
@@ -28,3 +28,10 @@ Test:
 7. EEK SNEEK shows 3 alternatives. Select one and send.
 8. Phone A receives the media, then the next turn starts.
 9. Repeat the same number in later turns. The point is to see whether the recipient can catch a sneek.
+
+
+## 0.5 connection fix
+
+The browser now gives PeerJS multiple ICE paths, including the Open Relay TURN service on ports 80 and 443. TURN is specifically designed to relay WebRTC traffic when two devices cannot establish a direct path. This is intended to address the `negotiation-failed` result seen on the iPhone beta.
+
+The Open Relay documentation lists the public test configuration used here and notes that TURN is needed when a direct WebRTC connection cannot be established. This public test configuration is suitable for controlled beta testing, not the final production app. Production should use application-scoped/dynamic TURN credentials and a managed signaling/backend layer.
