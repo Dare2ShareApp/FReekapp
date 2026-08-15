@@ -108,6 +108,9 @@ input:focus{border-color:var(--blue);box-shadow:0 0 0 4px #159dff16}
 @media(max-width:420px){
  .hero h1{font-size:32px}.logo{font-size:47px}.choiceGrid{gap:6px}.thumb img,.thumb video{height:132px}
 }
+
+#wheelWrap{filter:drop-shadow(0 14px 30px #0008)}
+#turnWheel:before{content:"";position:absolute}
 </style>
 </head>
 <body>
@@ -136,12 +139,31 @@ input:focus{border-color:var(--blue);box-shadow:0 0 0 4px #159dff16}
       <div class="notice" style="margin-top:9px"><b id="playerLabel">You</b> vs <b id="otherLabel">your friend</b></div>
     </div>
 
-    <section id="setup" class="card">
+    
+<section id="startChoice" class="card hidden center">
+  <div class="pill">WHO GOES FIRST?</div>
+  <h2 style="margin:14px 0 7px;font-size:30px">Set the first move.</h2>
+  <p class="muted">You can choose, or let FReek spin the wheel. The wheel decides once — then the game alternates automatically.</p>
+  <div id="wheelWrap" style="margin:18px auto 10px;position:relative;width:250px;height:250px">
+    <div id="wheelPointer" style="position:absolute;z-index:4;left:50%;top:-4px;transform:translateX(-50%);font-size:28px;text-shadow:0 3px 8px #000">▼</div>
+    <div id="turnWheel" style="width:250px;height:250px;border-radius:50%;border:7px solid #35324f;box-shadow:0 16px 35px #0009;display:grid;place-items:center;background:conic-gradient(#20a7ff 0deg 180deg,#ff35bd 180deg 360deg);transition:transform 2.7s cubic-bezier(.12,.75,.14,1)">
+      <div style="width:92px;height:92px;border-radius:50%;background:#090914;border:2px solid #5c5878;display:grid;place-items:center;font-weight:1000;font-size:15px">FReek<br>SPIN</div>
+    </div>
+  </div>
+  <div class="row">
+    <button class="btn" onclick="chooseFirst('me')">I GO FIRST</button>
+    <button class="btn pink" onclick="chooseFirst('them')">THEY GO FIRST</button>
+  </div>
+  <button class="btn dark" onclick="spinFirst()">🎡 SPIN TO DECIDE</button>
+  <div id="firstResult" class="notice hidden" style="margin-top:12px;font-size:18px;font-weight:950"></div>
+</section>
+
+<section id="setup" class="card">
       <h2>Build your FReek pool</h2>
       <p class="muted">Select the photos/videos you want available. Only this pool is used in the game.</p>
       <input id="media" type="file" accept="image/*,video/*" multiple>
       <div id="poolInfo" class="small" style="margin-top:8px">0 items selected.</div>
-      <button id="readyBtn" class="btn" onclick="readyUp()">READY — START THE FReek</button>
+      <button id="readyBtn" class="btn" onclick="readyUp()">READY ✓</button>
       <div id="inviteBox" class="notice hidden" style="margin-top:12px">
         <b>Send your friend this invite:</b>
         <input id="inviteText" readonly>
@@ -204,14 +226,15 @@ input:focus{border-color:var(--blue);box-shadow:0 0 0 4px #159dff16}
     <button class="btn danger" onclick="endGame()">END FReek</button>
   </section>
 
-  <div class="small center">FReek Beta 0.5 · Connection-fix testing build</div>
+  <div class="small center">FReek Beta 0.6 · Turn Wheel + Turn Engine</div>
 </div>
 
 <script>
 const S={
  role:null,name:"",other:"Friend",peer:null,conn:null,code:"",
  media:[],urls:[],otherCount:0,turn:"",picked:null,sneekChoice:null,incoming:null,
- ready:false,inviteUrl:""
+ ready:false,inviteUrl:"",gameStarted:false,transferBuffer:[],transferBytes:0,
+ pendingReceive:false,roundId:0
 };
 const $=id=>document.getElementById(id);
 const show=(id,on=true)=>$(id).classList.toggle("hidden",!on);
@@ -231,7 +254,7 @@ function setupConnection(c){
  c.on("error",e=>setStatus("Connection error: "+e.type+" — retrying network path…"));
 }
 function onData(d){
- if(d instanceof ArrayBuffer || d instanceof Blob){receiveChunk(d);return}
+ if(d instanceof ArrayBuffer || d instanceof Blob){return}
  if(d.t==="hello"){
    S.other=d.name||"Friend";S.otherCount=d.count||0;
    $("otherLabel").textContent=S.other;$("friendNameA").textContent=S.other;$("theirNameA").textContent=S.other;
@@ -244,23 +267,35 @@ function onData(d){
    maybeStart();
  }
  if(d.t==="ready"){S.otherCount=d.count; $("friendCount").textContent=S.otherCount; maybeStart()}
+ if(d.t==="startGame"){
+   S.gameStarted=true;
+   show("startChoice",false);
+   const mine=d.first===S.role;
+   setTurn(mine);
+ }
  if(d.t==="pick"){
-   // This phone owns the pool, so this phone alone resolves the number.
+   // Only the owner of the pool resolves the number.
    S.picked=d.n;
    $("pickedNumber").textContent="#"+d.n;
    $("ownerCount").textContent=S.media.length;
-   show("turnBox",false);show("ownerDecision",true);show("sneekBox",false);show("received",false);
+   show("turnBox",false);show("ownerDecision",true);show("sneekBox",false);show("received",false);show("done",false);
    const f=S.media[d.n-1];
    if(!f){$("ownerPreview").innerHTML="<div class='notice'>That number is outside your selected pool. Something is out of sync.</div>";return}
    renderFile(f,"ownerPreview");
  }
- if(d.t==="startFile"){S.incoming={type:d.type,size:d.size,received:0,parts:[],name:d.name||"FReek"}}
+ if(d.t==="startFile"){S.incoming={type:d.type,size:d.size,chunks:new Array(d.total),received:0,total:d.total,name:d.name||"FReek"}}
+ if(d.t==="fileChunk"){
+   if(S.incoming && d.index>=0 && d.index<S.incoming.total){
+     S.incoming.chunks[d.index]=d.data;
+     S.incoming.received++;
+   }
+ }
  if(d.t==="endFile"){finishIncoming()}
  if(d.t==="freek"){
-   show("ownerDecision",false);show("sneekBox",false);show("turnBox",false);show("done",false);show("received",true);
+   show("ownerDecision",false);show("sneekBox",false);show("done",false);show("received",true);
    $("receivedTitle").textContent=(d.name||S.other)+" sent you a FReek 👀";
  }
- if(d.t==="nextTurn"){show("received",false);show("done",false);show("turnBox",true);setTurn(d.yourTurn)}
+ if(d.t==="nextTurn"){setTurn(d.yourTurn)}
  if(d.t==="endgame"){cleanup();msg("The FReek ended.")}
 }
 function csend(x){if(S.conn?.open)S.conn.send(x)}
@@ -313,39 +348,60 @@ function joinGame(){
 function maybeStart(){
  if(S.ready && S.conn?.open){
    csend({t:"ready",count:S.media.length});
-   // Host starts. Guest waits.
-   if(S.role==="host") setTurn(true);
+   if(S.role==="host" && S.gameStarted===false){
+     // Host waits until both ready, then presents first-player choice.
+     show("startChoice",true);
+     $("firstResult").classList.add("hidden");
+   }
  }
 }
-$("media").addEventListener("change",e=>{
- cleanUrls();
- S.media=Array.from(e.target.files||[]).filter(f=>f.type.startsWith("image/")||f.type.startsWith("video/"));
- $("poolInfo").textContent=S.media.length+" items selected.";
-});
-function readyUp(){
- if(S.media.length<3)return msg("Pick at least 3 photos/videos so EEK SNEEK can offer 3 replacements.");
- S.ready=true;
- $("readyBtn").textContent="READY ✓";
- $("readyBtn").disabled=true;
- if(S.role==="host") show("inviteBox",true);
- csend({t:"ready",count:S.media.length});
- if(S.conn?.open && S.role==="host") setTurn(true);
+function chooseFirst(who){
+ if(S.role!=="host") return msg("Player 1 controls the first-turn choice.");
+ if(!S.ready || !S.conn?.open) return msg("Both players must be connected and ready.");
+ const first = who==="me" ? "host" : "guest";
+ startGame(first);
+}
+function spinFirst(){
+ if(S.role!=="host") return msg("Player 1 controls the first-turn choice.");
+ if(S.gameStarted) return;
+ const wheel=$("turnWheel");
+ const pick=Math.random()<0.5?"host":"guest";
+ const extra=(pick==="host"?45:225);
+ wheel.style.transform=`rotate(${1440+extra}deg)`;
+ setTimeout(()=>startGame(pick,true),2750);
+}
+function startGame(first,fromWheel=false){
+ if(S.gameStarted)return;
+ S.gameStarted=true;
+ show("startChoice",false);
+ const mine=(first===S.role);
+ $("firstResult").classList.remove("hidden");
+ $("firstResult").textContent=mine?"YOU GO FIRST 👀":S.other+" GOES FIRST 👀";
+ setTimeout(()=>setTurn(mine),500);
+ csend({t:"startGame",first});
 }
 function setTurn(me){
  S.turn=me?"me":"them";
  show("turnBox",true);show("myTurn",me);show("theirTurn",!me);
+ show("ownerDecision",false);show("sneekBox",false);show("received",false);show("done",false);
  if(me){
    $("pickNumber").value="";
-   $("pickNumber").max=S.otherCount;
-   $("turnStatus").textContent="Pick one number, then wait for their decision.";
- }else $("turnStatus").textContent=S.other+" is choosing from your "+S.media.length+" items.";
+   $("pickNumber").max=Math.max(1,S.otherCount);
+   $("friendCount").textContent=S.otherCount;
+   $("turnStatus").textContent="Pick ONE number. Then wait for their decision.";
+ }else{
+   $("turnStatus").textContent=S.other+" is choosing from your "+S.media.length+" items.";
+ }
 }
 function pickNumber(){
  const n=parseInt($("pickNumber").value,10);
+ if(S.turn!=="me")return msg("Wait — it isn't your turn.");
  if(!S.conn?.open)return msg("Waiting for the other phone to connect.");
  if(!S.otherCount)return msg("Waiting for the other player's photo count.");
  if(!n||n<1||n>S.otherCount)return msg("Pick a number from 1 to "+S.otherCount+".");
- csend({t:"pick",n});
+ // Lock the displayed number so it cannot disappear during the owner's decision.
+ $("pickNumber").disabled=true;
+ csend({t:"pick",n,round:++S.roundId});
  setTurn(false);
 }
 function renderFile(f,target){
@@ -355,14 +411,28 @@ function renderFile(f,target){
 function sendFile(file, sneeked){
  if(!file)return;
  if(file.size>16*1024*1024)return msg("Beta limit: that item is over 16 MB. Try a smaller photo/video.");
- file.arrayBuffer().then(buf=>{
-   const chunk=16*1024;
-   csend({t:"startFile",type:file.type,size:buf.byteLength,name:file.name});
-   for(let p=0;p<buf.byteLength;p+=chunk) csend(buf.slice(p,Math.min(p+chunk,buf.byteLength)));
+ const reader=new FileReader();
+ reader.onload=()=>{
+   const bytes=new Uint8Array(reader.result);
+   let binary="";
+   const slice=0x6000;
+   // Convert to base64 in manageable chunks.
+   for(let i=0;i<bytes.length;i+=slice){
+     const chunk=bytes.subarray(i,Math.min(i+slice,bytes.length));
+     let s="";
+     for(let j=0;j<chunk.length;j++) s+=String.fromCharCode(chunk[j]);
+     binary+=btoa(s);
+   }
+   const chunkSize=24000;
+   const total=Math.ceil(binary.length/chunkSize);
+   csend({t:"startFile",type:file.type,size:file.size,name:file.name,total});
+   for(let i=0;i<total;i++) csend({t:"fileChunk",index:i,data:binary.slice(i*chunkSize,(i+1)*chunkSize)});
    csend({t:"endFile"});
-   csend({t:"freek",name:S.name,sneeked:!!sneeked});
-   show("ownerDecision",false);show("sneekBox",false);show("done",true);
- });
+   csend({t:"freek",name:S.name,sneeked:!!sneeked,round:S.roundId});
+   // The owner has completed the response. The picker gets the next turn.
+   setTurn(true);
+ };
+ reader.readAsArrayBuffer(file);
 }
 function sendPeek(){sendFile(S.media[S.picked-1],false)}
 function openSneek(){
@@ -384,21 +454,30 @@ function openSneek(){
 }
 function sendSneek(){if(S.sneekChoice===null)return msg("Pick one of the 3 options.");sendFile(S.media[S.sneekChoice],true)}
 function cancelSneek(){show("sneekBox",false);show("ownerDecision",true)}
-function receiveChunk(part){
- if(!S.incoming)return;
- S.incoming.parts.push(part);
- S.incoming.received += part.byteLength||part.size||0;
- if(S.incoming.received>=S.incoming.size) finishIncoming();
-}
+function receiveChunk(part){ return; }
 function finishIncoming(){
  if(!S.incoming)return;
- const b=new Blob(S.incoming.parts,{type:S.incoming.type});
- const u=URL.createObjectURL(b);S.urls.push(u);
- $("receivedMedia").innerHTML=S.incoming.type.startsWith("video/")?`<video class="media" src="${u}" controls playsinline></video>`:`<img class="media" src="${u}" alt="FReek received">`;
- S.incoming=null;
+ try{
+   const b64=S.incoming.chunks.join("");
+   const bin=atob(b64);
+   const arr=new Uint8Array(bin.length);
+   for(let i=0;i<bin.length;i++) arr[i]=bin.charCodeAt(i);
+   const b=new Blob([arr],{type:S.incoming.type});
+   const u=URL.createObjectURL(b);S.urls.push(u);
+   $("receivedMedia").innerHTML=S.incoming.type.startsWith("video/")?`<video class="media" src="${u}" controls playsinline></video>`:`<img class="media" src="${u}" alt="FReek received">`;
+   S.incoming=null;
+   // Recipient is the next picker.
+   setTurn(true);
+   show("received",true);
+   show("turnBox",true);
+ }catch(e){
+   S.incoming=null;
+   msg("The FReek arrived damaged. Try the round again.");
+ }
 }
-function acknowledge(){show("received",false);show("done",true)}
-function startNextTurn(){show("done",false);csend({t:"nextTurn",yourTurn:S.role!=="host"})}
+function acknowledge(){show("received",false);show("done",false);setTurn(true)}
+(){show("received",false);show("done",true)}
+function startNextTurn(){show("done",false);setTurn(true)}
 function copyInvite(){navigator.clipboard?.writeText(S.inviteUrl).then(()=>msg("Invite copied. Text it to your friend."))}
 async function shareInvite(){
  if(navigator.share){try{await navigator.share({title:"FReek",text:"Join my FReek 👀",url:S.inviteUrl})}catch(e){}}

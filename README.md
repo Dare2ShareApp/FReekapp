@@ -1,4 +1,4 @@
-# FReek Beta 0.5 — Connection Fix
+# FReek Beta 0.6 — Turn Wheel + Turn Engine
 
 This build fixes the biggest beta problems from 0.2:
 
@@ -35,3 +35,14 @@ Test:
 The browser now gives PeerJS multiple ICE paths, including the Open Relay TURN service on ports 80 and 443. TURN is specifically designed to relay WebRTC traffic when two devices cannot establish a direct path. This is intended to address the `negotiation-failed` result seen on the iPhone beta.
 
 The Open Relay documentation lists the public test configuration used here and notes that TURN is needed when a direct WebRTC connection cannot be established. This public test configuration is suitable for controlled beta testing, not the final production app. Production should use application-scoped/dynamic TURN credentials and a managed signaling/backend layer.
+
+
+## 0.6 gameplay fixes
+
+- Explicit turn engine: picker -> owner decides -> media delivered -> picker role alternates.
+- The player who just picked does NOT pick again after receiving a response; the other player becomes the picker.
+- First turn is selectable by Player 1: Player 1, Player 2, or a visual spin wheel.
+- The selected number is locked while the owner decides so it cannot be cleared by state changes.
+- File delivery now uses ordered base64 chunks rather than relying on partial binary objects being immediately renderable.
+- The recipient only renders the media after all chunks have arrived.
+- EEK SNEEK still remains secret; the receiver is never told which path was used.
