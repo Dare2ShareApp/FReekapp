@@ -300,6 +300,7 @@ function onData(d){
 }
 function csend(x){if(S.conn?.open)S.conn.send(x)}
 function createGame(){
+ if(typeof Peer === "undefined") return msg("FReek could not load its connection service. Reload the page and try again.");
  S.name=$("name").value.trim()||"Player 1";S.role="host";
  S.peer=new Peer(undefined,{
   debug:0,
@@ -321,6 +322,7 @@ function createGame(){
  S.peer.on("error",e=>setStatus("Connection error: "+e.type+" — retrying network path…"));
 }
 function joinGame(){
+ if(typeof Peer === "undefined") return msg("FReek could not load its connection service. Reload the page and try again.");
  S.name=$("name").value.trim()||"Player 2";
  let raw=$("joinCode").value.trim();
  if(!raw)return msg("Paste the FReek invite link or full connection code.");
@@ -344,6 +346,15 @@ function joinGame(){
 });
  S.peer.on("error",e=>msg("Couldn't connect. Paste the full invite link/code again."));
  show("home",false);show("game",true);setStatus("Connecting…");
+}
+
+function readyUp(){
+ if(S.media.length<3)return msg("Pick at least 3 photos/videos so EEK SNEEK can offer 3 replacements.");
+ S.ready=true;
+ $("readyBtn").textContent="READY ✓";
+ $("readyBtn").disabled=true;
+ csend({t:"ready",count:S.media.length});
+ if(S.role==="host"){ show("startChoice",true); $("firstResult").classList.add("hidden"); }
 }
 function maybeStart(){
  if(S.ready && S.conn?.open){
@@ -385,6 +396,7 @@ function setTurn(me){
  show("turnBox",true);show("myTurn",me);show("theirTurn",!me);
  show("ownerDecision",false);show("sneekBox",false);show("received",false);show("done",false);
  if(me){
+   $("pickNumber").disabled=false;
    $("pickNumber").value="";
    $("pickNumber").max=Math.max(1,S.otherCount);
    $("friendCount").textContent=S.otherCount;
@@ -429,7 +441,7 @@ function sendFile(file, sneeked){
    for(let i=0;i<total;i++) csend({t:"fileChunk",index:i,data:binary.slice(i*chunkSize,(i+1)*chunkSize)});
    csend({t:"endFile"});
    csend({t:"freek",name:S.name,sneeked:!!sneeked,round:S.roundId});
-   // The owner has completed the response. The picker gets the next turn.
+   // The owner has completed the response. The owner becomes the next picker.
    setTurn(true);
  };
  reader.readAsArrayBuffer(file);
@@ -466,8 +478,8 @@ function finishIncoming(){
    const u=URL.createObjectURL(b);S.urls.push(u);
    $("receivedMedia").innerHTML=S.incoming.type.startsWith("video/")?`<video class="media" src="${u}" controls playsinline></video>`:`<img class="media" src="${u}" alt="FReek received">`;
    S.incoming=null;
-   // Recipient is the next picker.
-   setTurn(true);
+   // Recipient just received the FReek. The sender/owner is the next picker.
+   setTurn(false);
    show("received",true);
    show("turnBox",true);
  }catch(e){
@@ -475,8 +487,7 @@ function finishIncoming(){
    msg("The FReek arrived damaged. Try the round again.");
  }
 }
-function acknowledge(){show("received",false);show("done",false);setTurn(true)}
-(){show("received",false);show("done",true)}
+function acknowledge(){show("received",false);show("done",false);setTurn(false)}
 function startNextTurn(){show("done",false);setTurn(true)}
 function copyInvite(){navigator.clipboard?.writeText(S.inviteUrl).then(()=>msg("Invite copied. Text it to your friend."))}
 async function shareInvite(){
