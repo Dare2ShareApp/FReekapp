@@ -169,6 +169,7 @@ window.loadPeerJS=function(){
       <p class="muted">Select the photos/videos you want available. Only this pool is used in the game.</p>
       <input id="media" type="file" accept="image/*,video/*" multiple>
       <div id="poolInfo" class="small" style="margin-top:8px">0 items selected.</div>
+      <div id="poolPreview" class="choiceGrid" style="margin-top:14px"></div>
       <button id="readyBtn" class="btn" onclick="readyUp()">READY ✓</button>
       <div id="inviteBox" class="notice hidden" style="margin-top:12px">
         <b>Send your friend this invite:</b>
@@ -232,7 +233,7 @@ window.loadPeerJS=function(){
     <button class="btn danger" onclick="endGame()">END FReek</button>
   </section>
 
-  <div class="small center">FReek Beta 0.8 · Hardened Create</div>
+  <div class="small center">FReek Beta 0.9 · Photo Pool Fix</div>
 </div>
 
 <script>
@@ -486,6 +487,27 @@ async function shareInvite(){
 }
 function endGame(){if(confirm("End this FReek?")){csend({t:"endgame"});cleanup();}}
 function cleanup(){cleanUrls();S.conn?.close();S.peer?.destroy();location.href=location.pathname}
+
+function updatePool(files){
+ S.media=Array.from(files||[]);
+ $("poolInfo").textContent=S.media.length+" item"+(S.media.length===1?"":"s")+" selected.";
+ const box=$("poolPreview"); box.innerHTML="";
+ S.media.slice(0,12).forEach((f,i)=>{
+   const wrap=document.createElement("div"); wrap.className="thumb";
+   if(f.type.startsWith("video/")){
+     const v=document.createElement("video"); v.src=URL.createObjectURL(f); v.muted=true; v.playsInline=true; wrap.appendChild(v);
+   }else{
+     const im=document.createElement("img"); im.src=URL.createObjectURL(f); im.alt="Pool item "+(i+1); wrap.appendChild(im);
+   }
+   const label=document.createElement("button"); label.textContent="#"+(i+1);
+   label.disabled=true; wrap.appendChild(label); box.appendChild(wrap);
+ });
+ if(S.media.length>12){
+   const more=document.createElement("div"); more.className="notice"; more.textContent="+"+(S.media.length-12)+" more selected"; box.appendChild(more);
+ }
+ $("readyBtn").disabled=S.media.length<3;
+}
+$("media").addEventListener("change",e=>updatePool(e.target.files));
 const params=new URLSearchParams(location.search);
 if(params.get("join")){$("joinBox").classList.remove("hidden");$("joinCode").value=location.href}
 </script>
