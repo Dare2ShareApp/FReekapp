@@ -92,7 +92,7 @@ input:focus{border-color:var(--blue);box-shadow:0 0 0 4px #159dff16}
 }
 .thumb:nth-child(2){transform:translateY(-7px) rotate(1deg)}
 .thumb:nth-child(3){transform:rotate(-1deg)}
-.thumb img,.thumb video{display:block;width:100%;height:155px;object-fit:cover}
+.thumb img,.thumb video{display:block;width:100%;height:180px;object-fit:cover}
 .thumb button{width:100%;border:0;background:#1a1930;color:#fff;font-weight:950;padding:11px}
 .selected{outline:3px solid var(--pink);box-shadow:0 0 25px #ff35bd44;transform:translateY(-5px)!important}
 .media{display:block;width:100%;max-height:420px;object-fit:contain;background:#030307;border-radius:22px;margin-top:12px}
@@ -105,7 +105,10 @@ input:focus{border-color:var(--blue);box-shadow:0 0 0 4px #159dff16}
 .sessionCode{font-size:24px;font-weight:1000;letter-spacing:3px;text-align:center}
 .sessionRow .btn{margin:0;padding:10px 9px;font-size:12px}
 #received{position:relative;overflow:hidden;order:-10}
-#receivedMedia{min-height:240px;display:flex;align-items:center;justify-content:center}
+#receivedMedia{min-height:260px;display:flex;align-items:center;justify-content:center;padding:8px}
+#ownerPreview{min-height:260px;display:flex;align-items:center;justify-content:center}
+#ownerPreview .media,#receivedMedia .media{width:100%;max-height:560px;min-height:240px}
+#sneekBox .choiceGrid{min-height:180px}
 #receivedMedia .media{width:100%;max-height:520px;min-height:220px}
 .chatMessages{height:210px;overflow-y:auto;padding:8px 2px;display:flex;flex-direction:column;gap:8px}
 .chatEmpty{color:var(--muted);text-align:center;padding:60px 10px 10px;font-size:14px}
@@ -127,6 +130,10 @@ input:focus{border-color:var(--blue);box-shadow:0 0 0 4px #159dff16}
 
 #wheelWrap{filter:drop-shadow(0 14px 30px #0008)}
 #turnWheel:before{content:"";position:absolute}
+.gameTop{display:flex;justify-content:flex-start;margin:0 0 8px}.backBtn{font-size:12px;padding:9px 12px}
+.sessionRow{grid-template-columns:1fr auto auto auto auto!important}
+#startChoice .row{margin-bottom:8px}
+#startChoice .btn:disabled{opacity:.45;filter:saturate(.5)}
 </style>
 <script>
 window.loadPeerJS=function(){
@@ -152,9 +159,17 @@ window.loadPeerJS=function(){
       <button class="btn pink" onclick="joinGame()">JOIN NOW</button>
     </div>
     <div class="small" style="margin-top:12px">Your name is chosen after you start or join a session, so every FReek session can use a different name.</div>
+    <section id="mainSessions" class="card hidden" style="margin-top:16px">
+      <div class="pill">OPEN FReek SESSIONS</div>
+      <div id="mainSessionList" class="sessionList"></div>
+      <button class="btn dark" onclick="createGame()">＋ CREATE NEW FReek</button>
+    </section>
   </section>
 
   <section id="game" class="hidden">
+    <div class="gameTop">
+      <button class="btn dark backBtn" onclick="backToSessions()">← SESSIONS</button>
+    </div>
     <div class="card">
       <div class="status" id="connectionStatus">Connecting…</div>
       <div class="notice" style="margin-top:9px"><b id="playerLabel">You</b> vs <b id="otherLabel">your friend</b></div>
@@ -194,10 +209,10 @@ window.loadPeerJS=function(){
     </div>
   </div>
   <div class="row">
-    <button class="btn" onclick="chooseFirst('me')">I GO FIRST</button>
-    <button class="btn pink" onclick="chooseFirst('them')">THEY GO FIRST</button>
+    <button id="firstMeBtn" class="btn" onclick="chooseFirst('me')">YOU GO FIRST</button>
+    <button id="firstThemBtn" class="btn pink" onclick="chooseFirst('them')">THEY GO FIRST</button>
   </div>
-  <button class="btn dark" onclick="spinFirst()">🎡 SPIN TO DECIDE</button>
+  <button id="spinBtn" class="btn dark" onclick="spinFirst()">🎡 SPIN TO DECIDE</button>
   <div id="firstResult" class="notice hidden" style="margin-top:12px;font-size:18px;font-weight:950"></div>
 </section>
 
@@ -253,7 +268,7 @@ window.loadPeerJS=function(){
     </section>
   </section>
 
-  <div class="small center">FReek Beta 1.3 · Session Close + Names</div>
+  <div class="small center">FReek Beta 1.4 · Session Screens + Shared Wheel</div>
 </div>
 
 <script>
@@ -277,18 +292,54 @@ function peerOptions(){return {host:"0.peerjs.com",port:443,path:"/",secure:true
  {urls:"turn:openrelay.metered.ca:443",username:"openrelayproject",credential:"openrelayproject"},
  {urls:"turn:openrelay.metered.ca:443?transport=tcp",username:"openrelayproject",credential:"openrelayproject"}]}}}
 function renderSessions(){
- const box=$("sessionList"); if(!box)return; box.innerHTML="";
- S.sessions.forEach((s,idx)=>{
-   const row=document.createElement("div");row.className="sessionRow";
-   const code=document.createElement("div");code.className="sessionCode";code.textContent=s.id;
-   const copy=document.createElement("button");copy.className="btn dark";copy.textContent="COPY";
-   copy.onclick=()=>navigator.clipboard?.writeText(s.id).then(()=>msg("FReek ID "+s.id+" copied."));
-   const share=document.createElement("button");share.className="btn pink";share.textContent="SHARE";
-   share.onclick=()=>shareSession(s);
-   const close=document.createElement("button");close.className="btn danger";close.textContent="CLOSE";
-   close.onclick=()=>closeSession(s.id);
-   row.append(code,copy,share,close);box.appendChild(row);
+ const boxes=[$("sessionList"),$("mainSessionList")].filter(Boolean);
+ boxes.forEach(box=>{
+   box.innerHTML="";
+   S.sessions.forEach(s=>{
+     const row=document.createElement("div");row.className="sessionRow";
+     const code=document.createElement("div");code.className="sessionCode";code.textContent=s.id;
+     const open=document.createElement("button");open.className="btn";open.textContent="OPEN";open.onclick=()=>openSessionScreen(s.id);
+     const copy=document.createElement("button");copy.className="btn dark";copy.textContent="COPY";
+     copy.onclick=()=>navigator.clipboard?.writeText(s.id).then(()=>msg("FReek ID "+s.id+" copied."));
+     const share=document.createElement("button");share.className="btn pink";share.textContent="SHARE";
+     share.onclick=()=>shareSession(s);
+     const close=document.createElement("button");close.className="btn danger";close.textContent="CLOSE";
+     close.onclick=()=>closeSession(s.id);
+     row.append(code,open,copy,share,close);box.appendChild(row);
+   });
  });
+ const main=$("mainSessions");
+ if(main) main.classList.toggle("hidden",S.sessions.length===0);
+}
+function saveActiveSession(){
+ const s=S.activeSession;if(!s)return;
+ s.state={name:S.name,other:S.other,media:S.media,otherCount:S.otherCount,turn:S.turn,picked:S.picked,
+  sneekChoice:S.sneekChoice,ready:S.ready,gameStarted:S.gameStarted,roundId:S.roundId,
+  chat:[...(s.chat||[])]};
+}
+function restoreSession(s){
+ if(!s)return;
+ const st=s.state||{};
+ S.activeSession=s;S.peer=s.peer;S.conn=s.conn;S.code=s.id;S.name=st.name||s.name||S.name||"Player 1";
+ S.other=st.other||"Friend";S.media=st.media||[];S.otherCount=st.otherCount||0;S.turn=st.turn||"";
+ S.picked=st.picked||null;S.sneekChoice=null;S.ready=!!st.ready;S.gameStarted=!!st.gameStarted;S.roundId=st.roundId||0;
+ S.chat=s.chat||st.chat||[];renderChatHistory();
+ $("playerLabel").textContent=S.name;$("otherLabel").textContent=S.other;$("theirNameA").textContent=S.other;$("theirNameA").textContent=S.other;
+ $("firstMeBtn").textContent=S.name+" GOES FIRST";
+ $("firstThemBtn").textContent=S.other+" GOES FIRST";
+ $("firstMeBtn").disabled=S.role!=="host";$("firstThemBtn").disabled=S.role!=="host";
+ if(S.gameStarted){show("startChoice",false);setTurn(S.turn==="me")}
+}
+function openSessionScreen(id){
+ const s=S.sessions.find(x=>x.id===id);if(!s)return;
+ saveActiveSession();restoreSession(s);
+ show("home",false);show("game",true);
+ setStatus(s.status==="connected"?"Connected ✓":"FReek "+s.id+" waiting for a friend…");
+}
+function backToSessions(){
+ saveActiveSession();
+ show("game",false);show("home",true);
+ renderSessions();
 }
 async function shareSession(s){
  const url=makeInvite(s.id);
@@ -330,10 +381,11 @@ async function newSession(){
  session.name=(prompt("What name should this FReek use?","Player 1")||"Player 1").trim().slice(0,24)||"Player 1";
  S.name=session.name;
  renderSessions();
+ openSessionScreen(session.id);
 }
 function setupConnection(c,session){
  S.conn=c;
- if(session){session.conn=c;session.status="connected";S.activeSession=session;}
+ if(session){session.conn=c;session.status="connected";if(!S.activeSession)S.activeSession=session;}
  c.on("open",()=>{
    setStatus("Connected ✓");
    c.send({t:"hello",name:(session?.name||S.name),count:S.media.length});
@@ -365,12 +417,18 @@ function onData(d){
    $("otherLabel").textContent=S.other;$("friendCount").textContent=S.otherCount;$("theirNameA").textContent=S.other;
    maybeStart();
  }
- if(d.t==="ready"){S.otherCount=d.count; $("friendCount").textContent=S.otherCount; maybeStart()}
+ if(d.t==="ready"){S.otherCount=d.count; $("friendCount").textContent=S.otherCount; if(S.role==="host")showFirstChoice();}
+ if(d.t==="wheelSpin"){
+   $("turnWheel").style.transform=`rotate(${d.spin}deg)`;
+ }
  if(d.t==="startGame"){
    S.gameStarted=true;
+   if(d.spin!==null && d.spin!==undefined) $("turnWheel").style.transform=`rotate(${d.spin}deg)`;
    show("startChoice",false);
    const mine=d.first===S.role;
-   setTurn(mine);
+   $("firstResult").classList.remove("hidden");
+   $("firstResult").textContent=mine?S.name+" GOES FIRST 👀":S.other+" GOES FIRST 👀";
+   setTimeout(()=>setTurn(mine),500);
  }
  if(d.t==="pick"){
    // Only the owner of the pool resolves the number.
@@ -409,6 +467,7 @@ async function createGame(){
   session.name=(prompt("What name should this FReek use?","Player 1")||"Player 1").trim().slice(0,24)||"Player 1";
   S.name=session.name;
   renderSessions();
+  openSessionScreen(session.id);
   if(btn){btn.disabled=false;btn.textContent="CREATE FReek"}
  }catch(e){
   console.error(e);show("home",true);show("game",false);setStatus("Couldn't start FReek. Reload and try again.");
@@ -459,7 +518,13 @@ async function joinGame(){
  try{
   await window.loadPeerJS();if(typeof Peer!=="function")throw new Error("PeerJS unavailable");S.role="guest";
   S.peer=new Peer(undefined,peerOptions());
-  S.peer.on("open",()=>setupConnection(S.peer.connect(raw,{reliable:true,serialization:"binary",metadata:{app:"FReek",version:"1.1"}})));
+  S.peer.on("open",()=>{
+   const session={id:raw,peer:S.peer,conn:null,status:"connecting",name:S.name,chat:[]};
+   S.sessions.push(session);S.activeSession=session;renderSessions();
+   const c=S.peer.connect(raw,{reliable:true,serialization:"binary",metadata:{app:"FReek",version:"1.4"}});
+   setupConnection(c,session);
+   openSessionScreen(raw);
+ });
   S.peer.on("error",e=>setStatus("Connection error: "+e.type+" — waiting to reconnect…"));
  }catch(e){console.error(e);setStatus("Couldn't connect yet. Keep this screen open and FReek will retry.")}
 }
@@ -475,36 +540,43 @@ function maybeStart(){
  if(S.ready && S.conn?.open){
    csend({t:"ready",count:S.media.length});
    if(S.role==="host" && S.gameStarted===false){
-     // Host waits until both ready, then presents first-player choice.
-     show("startChoice",true);
-     $("firstResult").classList.add("hidden");
+     showFirstChoice();
    }
  }
 }
+function updateFirstControls(){
+ $("firstMeBtn").textContent=S.name+" GOES FIRST";
+ $("firstThemBtn").textContent=S.other+" GOES FIRST";
+ const host=S.role==="host";
+ $("firstMeBtn").disabled=!host;$("firstThemBtn").disabled=!host;$("spinBtn").disabled=!host;
+}
+function showFirstChoice(){
+ updateFirstControls();
+ show("startChoice",true);
+ $("firstResult").classList.add("hidden");
+}
 function chooseFirst(who){
- if(S.role!=="host") return msg("Player 1 controls the first-turn choice.");
+ if(S.role!=="host") return;
  if(!S.ready || !S.conn?.open) return msg("Both players must be connected and ready.");
- const first = who==="me" ? "host" : "guest";
- startGame(first);
+ startGame(who==="me"?"host":"guest",false);
 }
 function spinFirst(){
- if(S.role!=="host") return msg("Player 1 controls the first-turn choice.");
- if(S.gameStarted) return;
- const wheel=$("turnWheel");
- const pick=Math.random()<0.5?"host":"guest";
+ if(S.role!=="host" || S.gameStarted)return;
+ const wheel=$("turnWheel"),pick=Math.random()<0.5?"host":"guest";
  const extra=(pick==="host"?45:225);
- wheel.style.transform=`rotate(${1440+extra}deg)`;
- setTimeout(()=>startGame(pick,true),2750);
+ const spin=1440+extra;
+ wheel.style.transform=`rotate(${spin}deg)`;
+ csend({t:"wheelSpin",spin,pick});
+ setTimeout(()=>startGame(pick,true,spin),2750);
 }
-function startGame(first,fromWheel=false){
+function startGame(first,fromWheel=false,spin=null){
  if(S.gameStarted)return;
- S.gameStarted=true;
- show("startChoice",false);
+ S.gameStarted=true;show("startChoice",false);
  const mine=(first===S.role);
  $("firstResult").classList.remove("hidden");
- $("firstResult").textContent=mine?"YOU GO FIRST 👀":S.other+" GOES FIRST 👀";
+ $("firstResult").textContent=mine?S.name+" GOES FIRST 👀":S.other+" GOES FIRST 👀";
  setTimeout(()=>setTurn(mine),500);
- csend({t:"startGame",first});
+ csend({t:"startGame",first,spin:fromWheel?spin:null});
 }
 function setTurn(me){
  S.turn=me?"me":"them";
@@ -604,8 +676,16 @@ function finishIncoming(){
 }
 function acknowledge(){show("received",false);show("done",false);setTurn(false)}
 function startNextTurn(){show("done",false);setTurn(true)}
-function addChat(name,text,mine){
+function renderChatHistory(){
+ const box=$("chatMessages");if(!box)return;
+ box.innerHTML="";
+ const history=S.activeSession?.chat||[];
+ if(!history.length){box.innerHTML='<div class="chatEmpty">Talk trash. Encourage. Brag. 😈</div>';return}
+ history.forEach(m=>addChat(m.name,m.text,m.mine,false));
+}
+function addChat(name,text,mine,save=true){
  if(!text)return;
+ if(save && S.activeSession){S.activeSession.chat=S.activeSession.chat||[];S.activeSession.chat.push({name,text,mine});}
  const box=$("chatMessages");const empty=box.querySelector(".chatEmpty");if(empty)empty.remove();
  const bubble=document.createElement("div");bubble.className="chatBubble"+(mine?" mine":"");
  const who=document.createElement("b");who.textContent=mine?"You":name;
