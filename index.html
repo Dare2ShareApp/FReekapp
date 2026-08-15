@@ -5,180 +5,384 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#070914">
 <meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <link rel="apple-touch-icon" href="icon-180.png">
 <link rel="manifest" href="manifest.json">
-<title>FReek — Wanna get FReeky?</title>
+<title>FReek Beta 0.3</title>
 <script src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js"></script>
 <style>
-:root{--bg:#070914;--card:#10172b;--line:#293651;--blue:#159dff;--pink:#f52bba;--muted:#9ca8c0}
-*{box-sizing:border-box}body{margin:0;background:radial-gradient(circle at 50% -10%,#14264b 0,#070914 45%);color:#fff;font-family:-apple-system,BlinkMacSystemFont,"SF Pro Display","Segoe UI",sans-serif}
-.app{max-width:540px;margin:auto;padding:18px 15px 42px}.brand{text-align:center;font-size:44px;font-weight:950;letter-spacing:-3px;text-shadow:0 0 22px #168cff55}.fr{color:var(--blue)}.eek{color:var(--pink)}.tag{text-align:center;color:#d9deea;font-weight:700;margin:0 0 18px}
-.card{background:linear-gradient(180deg,#121a30,#0d1324);border:1px solid var(--line);border-radius:24px;padding:18px;margin:12px 0;box-shadow:0 12px 35px #0007}.hero{text-align:center;padding:24px 18px}.hero h1{font-size:30px;line-height:1.05;margin:0 0 9px}.hero p{color:var(--muted);line-height:1.45;margin:0}
-h2{font-size:23px;margin:0 0 8px}.muted{color:var(--muted);line-height:1.45}.small{font-size:12px;color:#7f8aa3;line-height:1.45}
-input{width:100%;background:#070b15;border:1px solid #35425e;color:#fff;border-radius:15px;padding:15px;font-size:17px;margin-top:9px;outline:none}input:focus{border-color:var(--blue)}
-.btn{display:block;width:100%;border:0;border-radius:16px;padding:16px;margin-top:10px;color:#fff;font-size:16px;font-weight:900;background:linear-gradient(135deg,#1179ff,#20b8ff);box-shadow:0 8px 20px #0d8cff30}.pink{background:linear-gradient(135deg,#f51b9f,#9b48ff)}.dark{background:#1a2339;border:1px solid #3a4763}.danger{background:#251426;border:1px solid #653451}
-.row{display:grid;grid-template-columns:1fr 1fr;gap:9px}.hidden{display:none!important}.status{border-radius:15px;padding:13px;background:#080e1c;border:1px solid #24304a}.ok{color:#58e5a0}.code{font-size:31px;font-weight:950;letter-spacing:5px;text-align:center;background:#080c17;border-radius:16px;padding:15px;margin:12px 0}
-.pill{display:inline-block;background:#1b2944;color:#c5d0e4;border-radius:999px;padding:7px 10px;font-size:12px;font-weight:900}.number{font-size:76px;text-align:center;font-weight:950;letter-spacing:-4px;color:#fff;text-shadow:0 0 25px #149cff99;margin:5px}.media{display:block;width:100%;max-height:400px;object-fit:contain;background:#03050a;border-radius:18px;margin-top:12px}.center{text-align:center}.choice{font-size:14px;font-weight:800}.spin{animation:pulse 1.5s infinite}@keyframes pulse{50%{opacity:.45}}
-.rules{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-top:14px}.rule{background:#0b1120;border:1px solid #202c45;border-radius:15px;padding:11px;font-size:12px;color:#aab5ca}.rule b{display:block;color:#fff;margin-bottom:4px}.blue{color:var(--blue)}.pinkText{color:#ff62d0}
+:root{
+ --bg:#070711;--panel:#10101d;--panel2:#151427;--line:#34324e;
+ --blue:#20a7ff;--blue2:#4bc7ff;--pink:#ff35bd;--pink2:#ff6ad1;
+ --text:#fbfbff;--muted:#9fa4bc;--green:#5df2a8;--yellow:#ffd65a;
+}
+*{box-sizing:border-box}
+body{
+ margin:0;min-height:100vh;color:var(--text);
+ font-family:-apple-system,BlinkMacSystemFont,"SF Pro Display","Segoe UI",sans-serif;
+ background:
+ radial-gradient(circle at 15% 0%,#143866 0,transparent 32%),
+ radial-gradient(circle at 90% 8%,#55133f 0,transparent 30%),
+ linear-gradient(145deg,#070711 0%,#090916 55%,#0b0712 100%);
+}
+body:before{
+ content:"";position:fixed;inset:0;pointer-events:none;opacity:.08;
+ background-image:radial-gradient(#fff 1px,transparent 1px);background-size:18px 18px;
+}
+.app{max-width:560px;margin:auto;padding:18px 14px 42px;position:relative}
+.top{display:flex;align-items:center;justify-content:center;gap:9px;margin:0 0 2px}
+.logo{font-size:52px;font-weight:1000;letter-spacing:-4px;text-shadow:0 5px 24px #000}
+.fr{color:var(--blue)}.eek{color:var(--pink)}
+.mascot{font-size:26px;transform:rotate(-8deg);filter:drop-shadow(0 4px 10px #000)}
+.tag{text-align:center;color:#d8d8e8;font-weight:900;letter-spacing:.2px;margin-bottom:18px}
+.card{
+ background:linear-gradient(150deg,rgba(22,22,39,.94),rgba(10,10,20,.94));
+ border:1px solid rgba(117,115,155,.28);border-radius:30px;padding:18px;margin:14px 0;
+ box-shadow:0 22px 55px #0009, inset 0 1px 0 #ffffff08;
+ backdrop-filter:blur(14px);
+}
+.hero{position:relative;text-align:center;padding:30px 20px 24px;overflow:hidden}
+.hero:after{
+ content:"";position:absolute;width:180px;height:180px;right:-90px;top:-90px;
+ background:radial-gradient(circle,#ff35bd66,transparent 70%);pointer-events:none
+}
+.hero h1{font-size:36px;line-height:.98;letter-spacing:-1.5px;margin:0 0 12px}
+.hero h1 br+*{}
+.hero p,.muted{color:var(--muted);line-height:1.5}
+input{
+ width:100%;background:#080812;border:1px solid #3b3957;color:#fff;border-radius:17px;
+ padding:15px 16px;font-size:17px;outline:none;margin-top:9px;box-shadow:inset 0 1px 8px #0008
+}
+input:focus{border-color:var(--blue);box-shadow:0 0 0 4px #159dff16}
+.btn{
+ width:100%;border:0;border-radius:18px;padding:16px 14px;margin-top:10px;color:#fff;
+ font-size:16px;font-weight:950;letter-spacing:.1px;
+ background:linear-gradient(135deg,var(--blue),#3975ff);
+ box-shadow:0 10px 25px #159dff22, inset 0 1px 0 #ffffff26;
+ transition:.15s transform;
+}
+.btn:active{transform:scale(.97)}
+.pink{background:linear-gradient(135deg,var(--pink),#b52cff);box-shadow:0 10px 25px #ff35bd22}
+.dark{background:#17172a;border:1px solid #47445f}.danger{background:#241321;border:1px solid #66344f}
+.row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.hidden{display:none!important}
+.status,.notice{
+ background:#0a0a15;border:1px solid #302e47;border-radius:17px;padding:13px
+}
+.status:before{content:"●";color:var(--green);margin-right:7px;font-size:10px}
+.green{color:var(--green)}.small{font-size:12px;color:#7f849c;line-height:1.5}
+.pill{
+ display:inline-block;padding:7px 12px;border-radius:999px;
+ background:linear-gradient(90deg,#182c48,#281b3b);border:1px solid #3b4d6d;
+ color:#dce7f8;font-size:11px;letter-spacing:.7px;font-weight:950;text-transform:uppercase
+}
+.turn{
+ border:1px solid #3c5375;
+ background:linear-gradient(145deg,#101f34,#121021);
+ padding:22px;border-radius:28px;text-align:center;
+ box-shadow:0 15px 35px #0007
+}
+.turn .big{font-size:31px;font-weight:950;letter-spacing:-1px;margin:8px 0}
+.number{font-size:82px;font-weight:1000;text-align:center;letter-spacing:-6px;margin:12px 0}
+.count{color:var(--blue)}
+.timer{font-size:15px;color:var(--muted);margin-top:5px}
+.choiceGrid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:9px;margin-top:14px}
+.thumb{
+ background:#0a0a15;border:1px solid #393750;border-radius:18px;overflow:hidden;
+ box-shadow:0 10px 24px #0007;transform:rotate(-1deg)
+}
+.thumb:nth-child(2){transform:translateY(-7px) rotate(1deg)}
+.thumb:nth-child(3){transform:rotate(-1deg)}
+.thumb img,.thumb video{display:block;width:100%;height:155px;object-fit:cover}
+.thumb button{width:100%;border:0;background:#1a1930;color:#fff;font-weight:950;padding:11px}
+.selected{outline:3px solid var(--pink);box-shadow:0 0 25px #ff35bd44;transform:translateY(-5px)!important}
+.media{display:block;width:100%;max-height:420px;object-fit:contain;background:#030307;border-radius:22px;margin-top:12px}
+#ownerDecision h2,#sneekBox h2{font-size:29px;letter-spacing:-1px}
+#ownerDecision .row .btn:first-child{border-radius:22px 12px 22px 12px}
+#ownerDecision .row .btn:last-child{border-radius:12px 22px 12px 22px}
+#received{position:relative;overflow:hidden}
+#received:before{
+ content:"";position:absolute;inset:-60px;background:radial-gradient(circle at 50% 0,#20a7ff18,transparent 55%);pointer-events:none
+}
+.step{display:flex;gap:10px;align-items:flex-start;margin:9px 0}
+.numdot{min-width:28px;height:28px;border-radius:50%;background:var(--blue);display:grid;place-items:center;font-weight:950}
+@media(max-width:420px){
+ .hero h1{font-size:32px}.logo{font-size:47px}.choiceGrid{gap:6px}.thumb img,.thumb video{height:132px}
+}
 </style>
 </head>
 <body>
 <div class="app">
-  <div class="brand"><span class="fr">FR</span><span class="eek">eek</span></div>
-  <div class="tag">Wanna get FReeky? 👀</div>
+  <div class="top"><div class="logo"><span class="fr">FR</span><span class="eek">eek</span></div><div class="mascot">👀</div></div>
+  <div class="tag">Pick a number. Be brave. 👀</div>
 
   <section id="home" class="card hero">
-    <h1>Pick a number.<br>FReek picks the photo.</h1>
-    <p>Your friend chooses a number from your camera roll. You decide whether they get the real one — or you secretly EEK SNEEK.</p>
+    <h1>Pick a number.<br><span style="color:var(--blue)">FReek</span> picks the photo.</h1>
+    <p>Take turns. They pick a number from <b>your</b> pool. Then you decide how brave you feel. 😈</p>
     <input id="name" maxlength="24" placeholder="Your name">
     <div class="row">
       <button class="btn" onclick="createGame()">CREATE FReek</button>
       <button class="btn pink" onclick="show('joinBox')">JOIN FReek</button>
     </div>
     <div id="joinBox" class="hidden">
-      <input id="joinCode" placeholder="Paste the game code">
+      <input id="joinCode" placeholder="Paste the FReek invite link or full code">
       <button class="btn pink" onclick="joinGame()">JOIN NOW</button>
     </div>
-    <div class="rules">
-      <div class="rule"><b class="blue">FR PEEK</b>Send the real pick.</div>
-      <div class="rule"><b class="pinkText">EEK SNEEK</b>Secretly swap it.</div>
-    </div>
+    <div class="small" style="margin-top:12px">This beta uses an invite link/code. The short display code is no longer used because it could not uniquely connect two phones.</div>
   </section>
 
   <section id="game" class="hidden">
     <div class="card">
-      <span class="pill">FReek with <span id="otherName">your friend</span></span>
-      <div id="status" class="status" style="margin-top:10px">Connecting…</div>
+      <div class="status" id="connectionStatus">Connecting…</div>
+      <div class="notice" style="margin-top:9px"><b id="playerLabel">You</b> vs <b id="otherLabel">your friend</b></div>
     </div>
 
-    <div id="library" class="card">
-      <h2>Your FReek pool</h2>
-      <p class="muted">Choose the photos/videos you want available for this game. The beta never uploads your whole camera roll.</p>
+    <section id="setup" class="card">
+      <h2>Build your FReek pool</h2>
+      <p class="muted">Select the photos/videos you want available. Only this pool is used in the game.</p>
       <input id="media" type="file" accept="image/*,video/*" multiple>
-      <div id="libraryInfo" class="small" style="margin-top:9px">0 items selected.</div>
-    </div>
+      <div id="poolInfo" class="small" style="margin-top:8px">0 items selected.</div>
+      <button id="readyBtn" class="btn" onclick="readyUp()">READY — START THE FReek</button>
+      <div id="inviteBox" class="notice hidden" style="margin-top:12px">
+        <b>Send your friend this invite:</b>
+        <input id="inviteText" readonly>
+        <button class="btn dark" onclick="copyInvite()">COPY INVITE</button>
+        <button class="btn dark" onclick="shareInvite()">SHARE INVITE</button>
+        <div class="small" style="margin-top:8px">Your friend needs to open the invite link on their phone. Manual code paste also works.</div>
+      </div>
+    </section>
 
-    <div id="invite" class="card hidden center">
-      <h2>Send this code</h2>
-      <div id="code" class="code">--------</div>
-      <button class="btn dark" onclick="copyCode()">COPY CODE</button>
-      <p class="small">Your friend opens the same FReek beta and taps JOIN FReek.</p>
-    </div>
+    <section id="turnBox" class="hidden">
+      <div id="myTurn" class="card turn hidden">
+        <div class="pill">YOUR TURN</div>
+        <div class="big">Pick from <span id="friendCount" class="count">0</span> items</div>
+        <div class="muted">These are <b id="friendNameA">your friend's</b> selected items. You can't see them.</div>
+        <input id="pickNumber" type="number" min="1" inputmode="numeric" placeholder="Pick a number">
+        <button class="btn" onclick="pickNumber()">SEND THE PICK</button>
+      </div>
+      <div id="theirTurn" class="card turn hidden">
+        <div class="pill">THEIR TURN</div>
+        <div class="big"><span id="theirNameA">Your friend</span> is choosing.</div>
+        <div class="muted">Don't slam numbers at each other. One turn finishes before the next starts.</div>
+        <div class="timer" id="turnStatus">Waiting…</div>
+      </div>
+    </section>
 
-    <div id="pick" class="card hidden">
-      <span class="pill">Your turn</span>
-      <h2 style="margin-top:12px">Pick any number.</h2>
-      <p class="muted">Pick the same number again if you want. 👀</p>
-      <input id="num" type="number" min="1" placeholder="47">
-      <button class="btn" onclick="requestNumber()">PICK <span id="numLabel">47</span></button>
-    </div>
+    <section id="ownerDecision" class="card hidden">
+      <div class="pill">THEY PICKED <span id="pickedNumber">#—</span> FROM YOUR <span id="ownerCount">0</span> ITEMS</div>
+      <h2 style="margin-top:12px">You decide what they get.</h2>
+      <div id="ownerPreview"></div>
+      <div class="row">
+        <button class="btn" onclick="sendPeek()">FR PEEK 👀</button>
+        <button class="btn pink" onclick="openSneek()">EEK SNEEK 😈</button>
+      </div>
+      <div class="small" style="margin-top:8px"><b>FR PEEK</b> = no games. <b>EEK SNEEK</b> = quietly switch it up.</div>
+    </section>
 
-    <div id="waiting" class="card hidden center">
-      <h2 class="spin">They're FReeking… 👀</h2>
-      <p class="muted">Your friend is choosing a number.</p>
-    </div>
+    <section id="sneekBox" class="card hidden">
+      <div class="pill">EEK SNEEK</div>
+      <h2 style="margin-top:12px">Feeling sneeky?</h2>
+      <p class="muted">These are three different items from your pool. Your friend only receives the one you choose.</p>
+      <div id="sneekOptions" class="choiceGrid"></div>
+      <button class="btn pink" onclick="sendSneek()">SEND THIS ONE</button>
+      <button class="btn dark" onclick="cancelSneek()">CANCEL</button>
+    </section>
 
-    <div id="decision" class="card hidden">
-      <span class="pill">They picked <span id="requested">#47</span></span>
-      <h2 style="margin-top:12px">You decide.</h2>
-      <div id="requestedMedia"></div>
-      <button class="btn" onclick="peek()">FR PEEK — SEND THE REAL ONE 📸</button>
-      <button class="btn pink" onclick="sneek()">EEK SNEEK — 3 NEW OPTIONS · $0.99 😈</button>
-      <p class="small">Beta note: payment is simulated for testing. The other player is not told whether you sneeked.</p>
-    </div>
-
-    <div id="receive" class="card hidden">
-      <span class="pill">FReek received 👀</span>
+    <section id="received" class="card hidden center">
+      <div class="pill">FReek RECEIVED 👀</div>
       <h2 id="receivedTitle" style="margin-top:12px">You got a FReek.</h2>
       <div id="receivedMedia"></div>
-      <button class="btn" onclick="myTurn()">PICK A NUMBER</button>
-    </div>
+      <div class="notice" style="margin-top:12px">The app does not tell you whether they used FR PEEK or EEK SNEEK.</div>
+      <button class="btn" onclick="acknowledge()">PICK A NUMBER FOR THEM</button>
+    </section>
 
-    <div class="card">
-      <button class="btn danger" onclick="endGame()">END FReek & CLEAR MEDIA</button>
-    </div>
+    <section id="done" class="card hidden center">
+      <h2>FReek round complete.</h2>
+      <p class="muted">Ready for the next turn?</p>
+      <button class="btn" onclick="startNextTurn()">NEXT FReek</button>
+    </section>
+
+    <button class="btn danger" onclick="endGame()">END FReek</button>
   </section>
 
-  <div class="small center">FReek Beta 0.2 · Test build · Please report anything confusing or broken.</div>
+  <div class="small center">FReek Beta 0.3 · Turn-based testing build</div>
 </div>
 
 <script>
-const S={role:null,name:"",other:"Friend",peer:null,conn:null,media:[],urls:[],code:"",requested:0,incoming:null};
+const S={
+ role:null,name:"",other:"Friend",peer:null,conn:null,code:"",
+ media:[],urls:[],otherCount:0,turn:"",picked:null,sneekChoice:null,incoming:null,
+ ready:false,inviteUrl:""
+};
 const $=id=>document.getElementById(id);
-function show(id,on=true){$(id).classList.toggle("hidden",!on)}
-function status(t){$("status").textContent=t}
-function clean(){S.urls.forEach(u=>URL.revokeObjectURL(u));S.urls=[]}
+const show=(id,on=true)=>$(id).classList.toggle("hidden",!on);
+function setStatus(t){$("connectionStatus").textContent=t}
+function cleanUrls(){S.urls.forEach(u=>URL.revokeObjectURL(u));S.urls=[]}
 function msg(t){alert(t)}
-function setup(c){
-  S.conn=c;
-  c.on("open",()=>{c.send({t:"hello",name:S.name});status("Connected ✓");if(S.role==="host"){show("invite",true);show("pick",true)}else show("waiting",true)});
-  c.on("data",d=>{
-    if(d instanceof ArrayBuffer || d instanceof Blob){if(S.incoming){S.incoming.parts.push(d);S.incoming.got+=d.byteLength||d.size||0;if(S.incoming.got>=S.incoming.size)finishIncoming()}return}
-    if(d.t==="hello"){$("otherName").textContent=d.name||"Friend";S.other=d.name||"Friend"}
-    if(d.t==="number"){
-      S.requested=d.n;$("requested").textContent="#"+d.n;show("pick",false);show("waiting",false);
-      const f=S.media[d.n-1];
-      $("requestedMedia").innerHTML="";
-      if(f)render(f,"requestedMedia");else $("requestedMedia").innerHTML="<p class='muted'>You don't have that many items in your selected pool.</p>";
-      show("decision",true);
-    }
-    if(d.t==="start"){S.incoming={type:d.type,size:d.size,got:0,parts:[]};}
-    if(d.t==="end"){if(S.incoming)finishIncoming()}
-    if(d.t==="freek"){show("decision",false);show("waiting",false);show("receive",true);$("receivedTitle").textContent=(d.name||S.other)+" sent you a FReek 👀"}
-    if(d.t==="turn"){show("receive",false);show("pick",true)}
-    if(d.t==="endgame"){cleanup(false);msg("The FReek ended. Media was cleared.")}
-  });
-  c.on("close",()=>status("Connection closed"));
+function makeInvite(id){return location.origin+location.pathname+"?join="+encodeURIComponent(id)}
+function setupConnection(c){
+ S.conn=c;
+ c.on("open",()=>{
+   setStatus("Connected ✓");
+   c.send({t:"hello",name:S.name,count:S.media.length});
+   if(S.role==="host") show("inviteBox",true);
+ });
+ c.on("data",onData);
+ c.on("close",()=>setStatus("Connection closed"));
+ c.on("error",e=>setStatus("Connection error: "+e.type));
 }
+function onData(d){
+ if(d instanceof ArrayBuffer || d instanceof Blob){receiveChunk(d);return}
+ if(d.t==="hello"){
+   S.other=d.name||"Friend";S.otherCount=d.count||0;
+   $("otherLabel").textContent=S.other;$("friendNameA").textContent=S.other;$("theirNameA").textContent=S.other;
+   $("friendCount").textContent=S.otherCount;
+   csend({t:"helloAck",name:S.name,count:S.media.length});
+ }
+ if(d.t==="helloAck"){
+   S.other=d.name||S.other;S.otherCount=d.count||S.otherCount;
+   $("otherLabel").textContent=S.other;$("friendCount").textContent=S.otherCount;$("theirNameA").textContent=S.other;
+   maybeStart();
+ }
+ if(d.t==="ready"){S.otherCount=d.count; $("friendCount").textContent=S.otherCount; maybeStart()}
+ if(d.t==="pick"){
+   // This phone owns the pool, so this phone alone resolves the number.
+   S.picked=d.n;
+   $("pickedNumber").textContent="#"+d.n;
+   $("ownerCount").textContent=S.media.length;
+   show("turnBox",false);show("ownerDecision",true);show("sneekBox",false);show("received",false);
+   const f=S.media[d.n-1];
+   if(!f){$("ownerPreview").innerHTML="<div class='notice'>That number is outside your selected pool. Something is out of sync.</div>";return}
+   renderFile(f,"ownerPreview");
+ }
+ if(d.t==="startFile"){S.incoming={type:d.type,size:d.size,received:0,parts:[],name:d.name||"FReek"}}
+ if(d.t==="endFile"){finishIncoming()}
+ if(d.t==="freek"){
+   show("ownerDecision",false);show("sneekBox",false);show("turnBox",false);show("done",false);show("received",true);
+   $("receivedTitle").textContent=(d.name||S.other)+" sent you a FReek 👀";
+ }
+ if(d.t==="nextTurn"){show("received",false);show("done",false);show("turnBox",true);setTurn(d.yourTurn)}
+ if(d.t==="endgame"){cleanup();msg("The FReek ended.")}
+}
+function csend(x){if(S.conn?.open)S.conn.send(x)}
 function createGame(){
-  S.name=$("name").value.trim()||"Player 1";S.role="host";S.peer=new Peer(undefined,{debug:0});
-  S.peer.on("open",id=>{S.code=id; $("code").textContent=id.slice(-8).toUpperCase();show("home",false);show("game",true);show("invite",true);status("Waiting for your friend…")});
-  S.peer.on("connection",setup);S.peer.on("error",e=>status("Connection error: "+e.type));
+ S.name=$("name").value.trim()||"Player 1";S.role="host";
+ S.peer=new Peer(undefined,{debug:0});
+ S.peer.on("open",id=>{
+   S.code=id;S.inviteUrl=makeInvite(id);$("inviteText").value=S.inviteUrl;
+   show("home",false);show("game",true);setStatus("Waiting for your friend…");
+ });
+ S.peer.on("connection",setupConnection);
+ S.peer.on("error",e=>setStatus("Connection error: "+e.type));
 }
 function joinGame(){
-  S.name=$("name").value.trim()||"Player 2";const id=$("joinCode").value.trim();if(!id)return msg("Paste the game code.");
-  S.role="join";S.peer=new Peer(undefined,{debug:0});S.peer.on("open",()=>setup(S.peer.connect(id,{reliable:true})));
-  S.peer.on("error",e=>msg("Couldn't connect. Check the code and try again."));
-  show("home",false);show("game",true);status("Connecting…");
+ S.name=$("name").value.trim()||"Player 2";
+ let raw=$("joinCode").value.trim();
+ if(!raw)return msg("Paste the FReek invite link or full connection code.");
+ try{let u=new URL(raw);raw=u.searchParams.get("join")||raw}catch(e){}
+ S.role="guest";
+ S.peer=new Peer(undefined,{debug:0});
+ S.peer.on("open",()=>setupConnection(S.peer.connect(raw,{reliable:true,serialization:"binary"})));
+ S.peer.on("error",e=>msg("Couldn't connect. Paste the full invite link/code again."));
+ show("home",false);show("game",true);setStatus("Connecting…");
 }
-$("media").addEventListener("change",e=>{clean();S.media=Array.from(e.target.files||[]).filter(f=>f.type.startsWith("image/")||f.type.startsWith("video/"));$("libraryInfo").textContent=S.media.length+" items selected. #1 is the first selected item.";$("num").max=S.media.length});
-$("num").addEventListener("input",()=>{$("numLabel").textContent=$("num").value||"47"});
-function requestNumber(){
-  const n=parseInt($("num").value,10);if(!S.conn?.open)return msg("Waiting for your friend to connect.");if(!n||n<1||n>S.media.length)return msg("Pick a number from 1 to "+S.media.length+".");
-  S.conn.send({t:"number",n});show("pick",false);show("waiting",true);
+function maybeStart(){
+ if(S.ready && S.conn?.open){
+   csend({t:"ready",count:S.media.length});
+   // Host starts. Guest waits.
+   if(S.role==="host") setTurn(true);
+ }
 }
-function render(file,target){
-  const u=URL.createObjectURL(file);S.urls.push(u);
-  $(target).innerHTML=file.type.startsWith("video/")?`<video class="media" src="${u}" controls playsinline></video>`:`<img class="media" src="${u}" alt="FReek preview">`;
+$("media").addEventListener("change",e=>{
+ cleanUrls();
+ S.media=Array.from(e.target.files||[]).filter(f=>f.type.startsWith("image/")||f.type.startsWith("video/"));
+ $("poolInfo").textContent=S.media.length+" items selected.";
+});
+function readyUp(){
+ if(S.media.length<3)return msg("Pick at least 3 photos/videos so EEK SNEEK can offer 3 replacements.");
+ S.ready=true;
+ $("readyBtn").textContent="READY ✓";
+ $("readyBtn").disabled=true;
+ if(S.role==="host") show("inviteBox",true);
+ csend({t:"ready",count:S.media.length});
+ if(S.conn?.open && S.role==="host") setTurn(true);
 }
-function peek(){const f=S.media[S.requested-1];if(!f)return msg("That number isn't in your selected pool.");send(f)}
-function sneek(){
-  if(!S.media.length)return;
-  let candidates=S.media.map((_,i)=>i).filter(i=>i!==S.requested-1);
-  if(!candidates.length)return msg("Add at least 2 items to use EEK SNEEK.");
-  // Simulated $0.99 beta unlock, then choose one of 3 different options.
-  candidates.sort(()=>Math.random()-0.5);const options=candidates.slice(0,Math.min(3,candidates.length));
-  let text="EEK SNEEK · $0.99 beta unlock\\n\\nPick an option:\\n"+options.map((i,k)=>`${k+1}. Item #${i+1}`).join("\\n");
-  const pick=prompt(text,"1");const n=parseInt(pick,10)-1;if(n<0||n>=options.length)return;
-  send(S.media[options[n]]);
+function setTurn(me){
+ S.turn=me?"me":"them";
+ show("turnBox",true);show("myTurn",me);show("theirTurn",!me);
+ if(me){
+   $("pickNumber").value="";
+   $("pickNumber").max=S.otherCount;
+   $("turnStatus").textContent="Pick one number, then wait for their decision.";
+ }else $("turnStatus").textContent=S.other+" is choosing from your "+S.media.length+" items.";
 }
-async function send(file){
-  if(file.size>14*1024*1024)return msg("Beta limit: that file is over 14 MB. Try a smaller item.");
-  const buf=await file.arrayBuffer(),chunk=16*1024;S.conn.send({t:"start",type:file.type,size:buf.byteLength});
-  for(let p=0;p<buf.byteLength;p+=chunk)S.conn.send(buf.slice(p,Math.min(p+chunk,buf.byteLength)));
-  S.conn.send({t:"end",name:S.name});
-  S.conn.send({t:"freek",name:S.name});show("decision",false);show("waiting",true);
+function pickNumber(){
+ const n=parseInt($("pickNumber").value,10);
+ if(!S.conn?.open)return msg("Waiting for the other phone to connect.");
+ if(!S.otherCount)return msg("Waiting for the other player's photo count.");
+ if(!n||n<1||n>S.otherCount)return msg("Pick a number from 1 to "+S.otherCount+".");
+ csend({t:"pick",n});
+ setTurn(false);
+}
+function renderFile(f,target){
+ const u=URL.createObjectURL(f);S.urls.push(u);
+ $(target).innerHTML=f.type.startsWith("video/")?`<video class="media" src="${u}" controls playsinline></video>`:`<img class="media" src="${u}" alt="Selected FReek">`;
+}
+function sendFile(file, sneeked){
+ if(!file)return;
+ if(file.size>16*1024*1024)return msg("Beta limit: that item is over 16 MB. Try a smaller photo/video.");
+ file.arrayBuffer().then(buf=>{
+   const chunk=16*1024;
+   csend({t:"startFile",type:file.type,size:buf.byteLength,name:file.name});
+   for(let p=0;p<buf.byteLength;p+=chunk) csend(buf.slice(p,Math.min(p+chunk,buf.byteLength)));
+   csend({t:"endFile"});
+   csend({t:"freek",name:S.name,sneeked:!!sneeked});
+   show("ownerDecision",false);show("sneekBox",false);show("done",true);
+ });
+}
+function sendPeek(){sendFile(S.media[S.picked-1],false)}
+function openSneek(){
+ const candidates=S.media.map((_,i)=>i).filter(i=>i!==S.picked-1);
+ if(candidates.length<3)return msg("EEK SNEEK needs at least 3 other items.");
+ candidates.sort(()=>Math.random()-.5);
+ const opts=candidates.slice(0,3);
+ const box=$("sneekOptions");box.innerHTML="";
+ S.sneekChoice=null;
+ opts.forEach(i=>{
+   const wrap=document.createElement("div");wrap.className="thumb";
+   const b=document.createElement("button");b.textContent="OPTION";
+   b.onclick=()=>{S.sneekChoice=i;document.querySelectorAll(".thumb").forEach(x=>x.classList.remove("selected"));wrap.classList.add("selected")};
+   if(S.media[i].type.startsWith("video/"))wrap.innerHTML=`<video src="${URL.createObjectURL(S.media[i])}" muted></video>`;
+   else {const im=document.createElement("img");im.src=URL.createObjectURL(S.media[i]);wrap.appendChild(im)}
+   wrap.appendChild(b);box.appendChild(wrap);
+ });
+ show("ownerDecision",false);show("sneekBox",true);
+}
+function sendSneek(){if(S.sneekChoice===null)return msg("Pick one of the 3 options.");sendFile(S.media[S.sneekChoice],true)}
+function cancelSneek(){show("sneekBox",false);show("ownerDecision",true)}
+function receiveChunk(part){
+ if(!S.incoming)return;
+ S.incoming.parts.push(part);
+ S.incoming.received += part.byteLength||part.size||0;
+ if(S.incoming.received>=S.incoming.size) finishIncoming();
 }
 function finishIncoming(){
-  const b=new Blob(S.incoming.parts,{type:S.incoming.type}),u=URL.createObjectURL(b);S.urls.push(u);
-  $("receivedMedia").innerHTML=S.incoming.type.startsWith("video/")?`<video class="media" src="${u}" controls playsinline></video>`:`<img class="media" src="${u}" alt="Received FReek">`;
-  S.incoming=null;
+ if(!S.incoming)return;
+ const b=new Blob(S.incoming.parts,{type:S.incoming.type});
+ const u=URL.createObjectURL(b);S.urls.push(u);
+ $("receivedMedia").innerHTML=S.incoming.type.startsWith("video/")?`<video class="media" src="${u}" controls playsinline></video>`:`<img class="media" src="${u}" alt="FReek received">`;
+ S.incoming=null;
 }
-function myTurn(){show("receive",false);show("pick",true);S.conn?.send({t:"turn"})}
-function copyCode(){navigator.clipboard?.writeText(S.code).then(()=>msg("Game code copied."))}
-function endGame(){if(confirm("End this FReek? Both players will be told and local media selections will be cleared.")){S.conn?.send({t:"endgame"});cleanup(true)}}
-function cleanup(back){clean();S.media=[];$("media").value="";$("libraryInfo").textContent="0 items selected.";S.conn?.close();S.peer?.destroy();if(back){show("game",false);show("home",true)}}
+function acknowledge(){show("received",false);show("done",true)}
+function startNextTurn(){show("done",false);csend({t:"nextTurn",yourTurn:S.role!=="host"})}
+function copyInvite(){navigator.clipboard?.writeText(S.inviteUrl).then(()=>msg("Invite copied. Text it to your friend."))}
+async function shareInvite(){
+ if(navigator.share){try{await navigator.share({title:"FReek",text:"Join my FReek 👀",url:S.inviteUrl})}catch(e){}}
+ else copyInvite();
+}
+function endGame(){if(confirm("End this FReek?")){csend({t:"endgame"});cleanup();}}
+function cleanup(){cleanUrls();S.conn?.close();S.peer?.destroy();location.href=location.pathname}
+const params=new URLSearchParams(location.search);
+if(params.get("join")){$("joinBox").classList.remove("hidden");$("joinCode").value=location.href}
 </script>
 </body>
 </html>
