@@ -7,7 +7,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <link rel="apple-touch-icon" href="icon-180.png">
 <link rel="manifest" href="manifest.json">
-<title>FReek Beta 1.8</title>
+<title>FReek Beta 1.9</title>
 
 <style>
 :root{
@@ -134,6 +134,52 @@ input:focus{border-color:var(--blue);box-shadow:0 0 0 4px #159dff16}
 .sessionRow{grid-template-columns:1fr auto auto auto auto!important}
 #startChoice .row{margin-bottom:8px}
 #startChoice .btn:disabled{opacity:.45;filter:saturate(.5)}
+
+
+/* FReek 1.9 session/game layout */
+#game{display:flex;flex-direction:column;gap:10px}
+#game>.gameTop{order:1}
+#game>.sessionPlayers{order:2}
+#game>#startChoice{order:3}
+#game>#setup{order:4}
+#game>#turnBox{order:5}
+#game>#ownerDecision{order:6}
+#game>#sneekBox{order:7}
+#game>#received{order:8}
+#game>#chat{order:9}
+#game>#done{order:10}
+.gameTop{align-items:center;gap:10px}
+.sessionTitleWrap{flex:1;min-width:0}
+.gameSessionName{font-size:22px;font-weight:1000;letter-spacing:-.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.sessionPlayers{padding:12px 14px}
+#chat{position:relative}
+#chat .pill{display:flex;align-items:center;gap:7px}
+.chatNewDot{display:inline-grid;place-items:center;min-width:9px;height:9px;border-radius:50%;background:#ff35bd;box-shadow:0 0 12px #ff35bd}
+.sessionNewBadge{display:inline-flex;align-items:center;gap:5px;margin-left:6px;padding:3px 7px;border-radius:999px;background:#ff35bd;color:#fff;font-size:10px;font-weight:1000}
+.sessionNameButton{position:relative}
+#mainSessionList .sessionRow{grid-template-columns:1fr auto!important}
+#mainSessionList .sessionActions{gap:5px}
+#mainSessionList .connectedSession .copyBtn,
+#mainSessionList .connectedSession .shareBtn{display:none!important}
+#mainSessionList .sessionX{display:inline-grid;place-items:center}
+#mainSessions{margin-bottom:8px}
+#mainSessions>.pill{margin-bottom:4px}
+
+#startChoice,#setup,#turnBox,#ownerDecision,#sneekBox,#received,#chat,#done{width:100%;box-sizing:border-box}
+#ownerPreview{background:#090914;border:1px dashed #49456a;border-radius:18px;overflow:hidden;margin:12px 0}
+#ownerPreview .media,#receivedMedia .media{display:block;width:100%;height:auto;max-height:520px;min-height:220px;object-fit:contain;background:#05050c}
+.previewEmpty{color:#aaa6bf;padding:70px 15px;text-align:center}
+.activityPulse{animation:activityPulse 1.2s ease-in-out infinite}
+@keyframes activityPulse{50%{transform:scale(1.04);box-shadow:0 0 22px #ff35bd55}}
+@media(max-width:420px){
+ .gameSessionName{font-size:20px}
+ #game{gap:8px}
+}
+#introSplash{position:fixed;inset:0;z-index:9999;background:#050511;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;animation:introFade .35s ease 1.25s forwards;pointer-events:none}
+#introSplash img{width:145px;height:145px;object-fit:contain;border-radius:28%;animation:introPop .65s cubic-bezier(.2,1.3,.3,1) both}
+.introWord{font-size:58px;line-height:1;font-weight:1000;letter-spacing:-4px}.introWord span{color:#20a7ff}.introWord b{color:#ff35bd}
+@keyframes introPop{0%{opacity:0;transform:scale(.7)}70%{opacity:1;transform:scale(1.08)}100%{transform:scale(1)}}
+@keyframes introFade{to{opacity:0;visibility:hidden}}
 </style>
 <script>
 window.loadPeerJS=function(){
@@ -149,7 +195,8 @@ window.loadPeerJS=function(){
 .sessionX{width:40px;height:40px;border-radius:50%;padding:0!important;font-size:20px!important;line-height:1}
 .connectedSession .sessionActions .shareBtn,.connectedSession .sessionActions .openBtn{display:none!important}
 </style></head>
-<body>
+<body><div id="introSplash" aria-label="FReek"><img src="icon-512.png" alt="FReek"><div class="introWord"><span>FR</span><b>eek</b></div></div>
+
 </div>
 
 <div class="app">
@@ -159,15 +206,13 @@ window.loadPeerJS=function(){
   <section id="home" class="card hero">
     <h1>Pick a number.<br><span style="color:var(--blue)">FReek</span> picks the photo.</h1>
     <p>Take turns. They pick a number from <b>your</b> pool. Then you decide how brave you feel. 😈</p>
-    <div class="row">
-      <button class="btn" id="createBtn" onclick="createGame()">CREATE FReek</button>
-      <button class="btn pink" onclick="show('joinBox')">JOIN FReek</button>
-    </div>
-    <div id="joinBox" class="hidden">
-      <input id="joinCode" placeholder="Enter the 6-digit FReek ID">
+    <button class="btn" id="createBtn" onclick="createGame()">CREATE FReek</button>
+    <div id="joinBox" style="margin-top:12px">
+      <input id="joinCode" inputmode="numeric" maxlength="6" placeholder="Enter 6-digit FReek ID">
       <button class="btn pink" onclick="joinGame()">JOIN FReek</button>
     </div>
     <div class="small" style="margin-top:12px">Create a FReek, name the session, then choose your name. Or enter a 6-digit ID and tap JOIN FReek.</div>
+    <button id="notifyBtn" class="btn dark" style="margin-top:10px" onclick="requestNotifications()">🔔 NOTIFICATIONS: OFF</button>
     <section id="mainSessions" class="card hidden" style="margin-top:16px">
       <div class="pill">OPEN FReek SESSIONS</div>
       <div id="mainSessionList" class="sessionList"></div>
@@ -178,8 +223,12 @@ window.loadPeerJS=function(){
   <section id="game" class="hidden">
     <div class="gameTop">
       <button class="btn dark backBtn" onclick="backToSessions()">← SESSIONS</button>
+      <div class="sessionTitleWrap">
+        <div id="gameSessionName" class="gameSessionName">FReek</div>
+        <div id="gameSessionStatus" class="sessionMeta">CONNECTING…</div>
+      </div>
     </div>
-    <div class="card">
+    <div class="card sessionPlayers">
       <div class="status" id="connectionStatus">Connecting…</div>
       <div class="notice" style="margin-top:9px"><b id="playerLabel">You</b> vs <b id="otherLabel">your friend</b></div>
     </div>
@@ -194,7 +243,7 @@ window.loadPeerJS=function(){
     </section>
 
 <section id="chat" class="card">
-  <div class="pill">FReek CHAT 💬</div>
+  <div class="pill">FReek CHAT 💬 <span id="chatNewIndicator" class="chatNewDot hidden" aria-label="New chat"></span></div>
   <div id="chatMessages" class="chatMessages"><div class="chatEmpty">Talk trash. Encourage. Brag. 😈</div></div>
   <div class="chatComposer">
     <input id="chatInput" maxlength="240" placeholder="Say something…">
@@ -232,12 +281,6 @@ window.loadPeerJS=function(){
       <div id="poolInfo" class="small" style="margin-top:8px">0 items selected.</div>
       
       <button id="readyBtn" class="btn" onclick="readyUp()">READY ✓</button>
-      <div id="inviteBox" class="notice hidden" style="margin-top:12px">
-        <b>FReek session:</b>
-        <div id="sessionList" class="sessionList"></div>
-        <button class="btn dark" onclick="newSession()">＋ NEW FReEK SESSION</button>
-        <div class="small" style="margin-top:8px">Pass the 6-digit number to your friend. Each session can wait here until someone joins.</div>
-      </div>
     </section>
 
     <section id="turnBox" class="hidden">
@@ -277,7 +320,7 @@ window.loadPeerJS=function(){
     </section>
   </section>
 
-  <div class="small center">FReek Beta 1.8 · Clean Main Screen + Independent Sessions</div>
+  <div class="small center">FReek Beta 1.9 · Clean Main Screen + Independent Sessions</div>
 </div>
 
 <script>
@@ -301,30 +344,37 @@ function peerOptions(){return {host:"0.peerjs.com",port:443,path:"/",secure:true
  {urls:"turn:openrelay.metered.ca:443",username:"openrelayproject",credential:"openrelayproject"},
  {urls:"turn:openrelay.metered.ca:443?transport=tcp",username:"openrelayproject",credential:"openrelayproject"}]}}}
 function renderSessions(){
- const boxes=[$("sessionList"),$("mainSessionList")].filter(Boolean);
+ const boxes=[$("mainSessionList")].filter(Boolean);
  boxes.forEach(box=>{
    box.innerHTML="";
    S.sessions.forEach(s=>{
      const row=document.createElement("div");
      row.className="sessionRow "+(s.status==="connected"?"connectedSession":"");
+     if(s.newActivity) row.classList.add("activityPulse");
      const nameBtn=document.createElement("button");
      nameBtn.className="sessionNameButton";
-     nameBtn.innerHTML="";
      const title=document.createElement("span");
      title.textContent=s.sessionName||("FReek "+s.id);
      const meta=document.createElement("span");
      meta.className="sessionMeta";
      meta.textContent=s.status==="connected"?"CONNECTED ✓":"Waiting for friend • ID "+s.id;
+     if(s.newActivity){
+       const badge=document.createElement("span");badge.className="sessionNewBadge";badge.textContent="NEW";
+       meta.appendChild(badge);
+     }
      nameBtn.append(title,meta);
      nameBtn.onclick=()=>openSessionScreen(s.id);
      const actions=document.createElement("div");actions.className="sessionActions";
-     const copy=document.createElement("button");copy.className="btn dark";copy.textContent="COPY";
-     copy.onclick=()=>navigator.clipboard?.writeText(s.id).then(()=>msg("FReek ID "+s.id+" copied."));
-     const share=document.createElement("button");share.className="btn pink shareBtn";share.textContent="SHARE";
-     share.onclick=()=>shareSession(s);
+     if(s.status!=="connected"){
+       const copy=document.createElement("button");copy.className="btn dark copyBtn";copy.textContent="COPY";
+       copy.onclick=()=>navigator.clipboard?.writeText(s.id).then(()=>msg("FReek ID "+s.id+" copied."));
+       const share=document.createElement("button");share.className="btn pink shareBtn";share.textContent="SHARE";
+       share.onclick=()=>shareSession(s);
+       actions.append(copy,share);
+     }
      const close=document.createElement("button");close.className="btn danger sessionX";close.textContent="×";close.title="Close session";
      close.onclick=()=>closeSession(s.id);
-     actions.append(copy,share,close);
+     actions.append(close);
      row.append(nameBtn,actions);box.appendChild(row);
    });
  });
@@ -335,7 +385,7 @@ function saveActiveSession(){
  const s=S.activeSession;if(!s)return;
  s.state={name:S.name,other:S.other,media:S.media,otherCount:S.otherCount,turn:S.turn,picked:S.picked,
   sneekChoice:S.sneekChoice,ready:S.ready,gameStarted:S.gameStarted,roundId:S.roundId,
-  chat:[...(s.chat||[])]};
+  chat:[...(s.chat||[])],newActivity:!!s.newActivity};
 }
 function restoreSession(s){
  if(!s)return;
@@ -343,8 +393,12 @@ function restoreSession(s){
  S.activeSession=s;S.peer=s.peer;S.conn=s.conn;S.code=s.id;S.name=st.name||s.name||S.name||"Player 1";
  S.other=st.other||"Friend";S.media=st.media||[];S.otherCount=st.otherCount||0;S.turn=st.turn||"";
  S.picked=st.picked||null;S.sneekChoice=null;S.ready=!!st.ready;S.gameStarted=!!st.gameStarted;S.roundId=st.roundId||0;
- S.chat=s.chat||st.chat||[];renderChatHistory();
- $("playerLabel").textContent=S.name;$("otherLabel").textContent=S.other;$("theirNameA").textContent=S.other;$("theirNameA").textContent=S.other;
+ S.chat=s.chat||st.chat||[];
+ s.newActivity=false;
+ renderChatHistory();
+ $("playerLabel").textContent=S.name;$("otherLabel").textContent=S.other;$("theirNameA").textContent=S.other;
+ $("gameSessionName").textContent=s.sessionName||("FReek "+s.id);
+ $("gameSessionStatus").textContent=s.status==="connected"?"CONNECTED ✓":"WAITING FOR FRIEND";
  $("firstMeBtn").textContent=S.name+" GOES FIRST";
  $("firstThemBtn").textContent=S.other+" GOES FIRST";
  $("firstMeBtn").disabled=S.role!=="host";$("firstThemBtn").disabled=S.role!=="host";
@@ -352,6 +406,8 @@ function restoreSession(s){
 }
 function openSessionScreen(id){
  const s=S.sessions.find(x=>x.id===id);if(!s)return;
+ s.newActivity=false;
+ $("chatNewIndicator")?.classList.add("hidden");
  saveActiveSession();restoreSession(s);
  show("home",false);show("game",true);
  setStatus(s.status==="connected"?"Connected ✓":"FReek "+s.id+" waiting for a friend…");
@@ -410,25 +466,69 @@ function setupConnection(c,session){
  c.on("open",()=>{
    setStatus("Connected ✓");
    c.send({t:"hello",name:(session?.name||S.name),sessionName:(session?.sessionName||"FReek"),count:S.media.length});
-   if(S.role==="host") show("inviteBox",true);
+   if(S.role==="host") renderSessions();
  });
  c.on("data",onData);
  c.on("close",()=>{
    if(S.conn===c){setStatus("Connection paused — reconnecting…");}
-   if(session)session.status="waiting";
+   if(session){session.status="waiting";session.conn=null;renderSessions();}
    if(S.role==="guest")setTimeout(resumeFReek,400);
  });
  c.on("error",e=>setStatus("Connection error: "+e.type+" — retrying…"));
 }
-function resumeFReek(){
- if(!document.hidden && S.role==="guest" && S.reconnectTarget && (!S.conn || !S.conn.open) && S.peer && !S.peer.destroyed){
-   try{setupConnection(S.peer.connect(S.reconnectTarget,{reliable:true,serialization:"binary",metadata:{app:"FReek",version:"1.1"}}));}catch(e){}
+async function resumeFReek(){
+ if(document.hidden)return;
+ if(!S.activeSession)return;
+ const s=S.activeSession;
+ // A phone lock/background can suspend WebRTC. Reconnect when the app returns.
+ if(s.status==="connected" && s.conn?.open)return;
+ try{
+   await window.loadPeerJS();
+   if(S.role==="host"){
+     if(!s.peer || s.peer.destroyed){
+       s.peer=new Peer(s.id,peerOptions());
+       s.peer.on("connection",c=>setupConnection(c,s));
+       await new Promise(resolve=>s.peer.once("open",resolve));
+     }
+     S.peer=s.peer;S.code=s.id;
+     s.status="waiting";renderSessions();
+   }else{
+     if(!S.peer || S.peer.destroyed){
+       S.peer=new Peer(undefined,peerOptions());
+       S.peer.on("open",()=>{});
+     }
+     const c=S.peer.connect(s.id,{reliable:true,serialization:"binary",metadata:{app:"FReek",version:"1.9"}});
+     setupConnection(c,s);
+   }
+ }catch(e){console.warn("resume",e)}
+}
+
+function markActivity(kind){
+ const s=S.activeSession;
+ if(!s)return;
+ s.newActivity=true;
+ if(kind==="chat") $("chatNewIndicator")?.classList.remove("hidden");
+ renderSessions();
+ const activeVisible=document.visibilityState==="visible" && !document.getElementById("game")?.classList.contains("hidden");
+ if(activeVisible){
+   s.newActivity=false;
+   if(kind==="chat") $("chatNewIndicator")?.classList.add("hidden");
+   renderSessions();
+ }else{
+   maybeNotify(kind,s);
  }
+}
+function maybeNotify(kind,s){
+ if(!("Notification" in window) || Notification.permission!=="granted")return;
+ const title=kind==="freek"?"New FReek 👀":"New FReek message 💬";
+ try{new Notification(title,{body:(s?.sessionName||"FReek")+" has something waiting for you."})}catch(_){}
 }
 function onData(d){
  if(d instanceof ArrayBuffer || d instanceof Blob){return}
  if(d.t==="hello"){
-   S.other=d.name||"Friend"; if(S.activeSession && d.sessionName) S.activeSession.sessionName=d.sessionName; renderSessions();S.otherCount=d.count||0;
+   S.other=d.name||"Friend"; if(S.activeSession && d.sessionName) S.activeSession.sessionName=d.sessionName;
+   if(S.activeSession){S.activeSession.status="connected";S.activeSession.conn=S.conn;}
+   renderSessions();S.otherCount=d.count||0;
    $("otherLabel").textContent=S.other;$("friendNameA").textContent=S.other;$("theirNameA").textContent=S.other;
    $("friendCount").textContent=S.otherCount;
    csend({t:"helloAck",name:S.name,count:S.media.length});
@@ -472,12 +572,28 @@ function onData(d){
  if(d.t==="freek"){
    show("ownerDecision",false);show("sneekBox",false);show("done",false);show("received",true);
    $("receivedTitle").textContent=(d.name||S.other)+" sent you a FReek 👀";
+   markActivity("freek");
  }
- if(d.t==="chat"){addChat(d.name||S.other,d.text||"",false)}
+ if(d.t==="chat"){
+   addChat(d.name||S.other,d.text||"",false);
+   markActivity("chat");
+ }
  if(d.t==="nextTurn"){setTurn(d.yourTurn)}
  if(d.t==="endgame"){cleanup();msg("The FReek ended.")}
 }
 function csend(x){if(S.conn?.open)S.conn.send(x)}
+function updateNotificationButton(){
+ const b=$("notifyBtn");if(!b)return;
+ const on=("Notification" in window && Notification.permission==="granted");
+ b.textContent=on?"🔔 NOTIFICATIONS: ON":"🔔 NOTIFICATIONS: OFF";
+}
+async function requestNotifications(){
+ if(!("Notification" in window))return msg("This browser does not support notifications.");
+ if(Notification.permission==="granted"){updateNotificationButton();return msg("Notifications are already enabled. You can turn them off in your device/browser settings.")}
+ if(Notification.permission==="denied"){return msg("Notifications are blocked for FReek. Turn them on in your device/browser settings.")}
+ try{await Notification.requestPermission();updateNotificationButton()}catch(e){msg("Could not request notification permission.")}
+}
+updateNotificationButton();
 async function createGame(){
  const btn=$("createBtn"); if(btn){btn.disabled=true;btn.textContent="STARTING…"}
  show("home",false);show("game",true);setStatus("Starting your FReek…");
@@ -505,11 +621,11 @@ function createHostSession(){
      const id=numericId();
      let peer;
      try{peer=new Peer(id,peerOptions())}catch(e){return attempt()}
-     const session={id,peer,conn:null,status:"waiting",name:""};
+     const session={id,peer,conn:null,status:"waiting",name:"",sessionName:"My FReek",newActivity:false,chat:[]};
      let settled=false;
      peer.on("open",()=>{
        settled=true;S.sessions.push(session);S.activeSession=session;S.peer=peer;S.code=id;S.inviteUrl=makeInvite(id);
-       renderSessions();$("inviteBox").classList.remove("hidden");
+       renderSessions();
        setStatus("FReek "+id+" created ✓ Waiting for your friend…");
        resolve(session);
      });
@@ -542,7 +658,7 @@ async function joinGame(){
   await window.loadPeerJS();if(typeof Peer!=="function")throw new Error("PeerJS unavailable");S.role="guest";
   S.peer=new Peer(undefined,peerOptions());
   S.peer.on("open",()=>{
-   const session={id:raw,peer:S.peer,conn:null,status:"connecting",name:S.name,sessionName:"FReek",chat:[]};
+   const session={id:raw,peer:S.peer,conn:null,status:"connecting",name:S.name,sessionName:"FReek",newActivity:false,chat:[]};
    S.sessions.push(session);S.activeSession=session;renderSessions();
    const c=S.peer.connect(raw,{reliable:true,serialization:"binary",metadata:{app:"FReek",version:"1.4"}});
    setupConnection(c,session);
@@ -627,9 +743,27 @@ function pickNumber(){
  setTurn(false);
 }
 function renderFile(f,target){
- const u=URL.createObjectURL(f);S.urls.push(u);
- $(target).innerHTML=f.type.startsWith("video/")?`<video class="media" src="${u}" controls playsinline></video>`:`<img class="media" src="${u}" alt="Selected FReek">`;
+ const box=$(target);if(!box||!f)return;
+ box.innerHTML="<div class='previewEmpty'>Loading preview…</div>";
+ if((f.type||"").startsWith("video/")){
+   const u=URL.createObjectURL(f);S.urls.push(u);
+   const v=document.createElement("video");v.className="media";v.controls=true;v.playsInline=true;v.src=u;
+   v.onerror=()=>box.innerHTML="<div class='previewEmpty'>Video preview isn't available on this device.</div>";
+   box.innerHTML="";box.appendChild(v);return;
+ }
+ const reader=new FileReader();
+ reader.onload=()=>{
+   const img=document.createElement("img");img.className="media";img.alt="Selected FReek";img.src=reader.result;
+   img.onerror=()=>{const u=URL.createObjectURL(f);S.urls.push(u);img.src=u};
+   box.innerHTML="";box.appendChild(img);
+ };
+ reader.onerror=()=>{
+   const u=URL.createObjectURL(f);S.urls.push(u);
+   box.innerHTML=`<img class="media" src="${u}" alt="Selected FReek">`;
+ };
+ reader.readAsDataURL(f);
 }
+
 function sendFile(file, sneeked){
  if(!file)return;
  if(file.size>16*1024*1024)return msg("Beta limit: that item is over 16 MB. Try a smaller photo/video.");
@@ -698,6 +832,7 @@ function finishIncoming(){
    const u=URL.createObjectURL(b);S.urls.push(u);
    $("receivedMedia").innerHTML=S.incoming.type.startsWith("video/")?`<video class="media" src="${u}" controls playsinline></video>`:`<img class="media" src="${u}" alt="FReek received">`;
    S.incoming=null;
+   markActivity("freek");
    // Recipient just received the FReek. The sender/owner is the next picker.
    setTurn(false);
    show("received",true);
@@ -719,6 +854,7 @@ function renderChatHistory(){
 function addChat(name,text,mine,save=true){
  if(!text)return;
  if(save && S.activeSession){S.activeSession.chat=S.activeSession.chat||[];S.activeSession.chat.push({name,text,mine});}
+ if(!mine && S.activeSession){S.activeSession.newActivity=true;renderSessions();}
  const box=$("chatMessages");const empty=box.querySelector(".chatEmpty");if(empty)empty.remove();
  const bubble=document.createElement("div");bubble.className="chatBubble"+(mine?" mine":"");
  const who=document.createElement("b");who.textContent=mine?"You":name;
@@ -733,10 +869,12 @@ function sendChat(){
 $("chatInput").addEventListener("keydown",e=>{if(e.key==="Enter")sendChat()});
 document.addEventListener("visibilitychange",()=>{
  if(!document.hidden){
-   if(!S.reconnectTarget)S.reconnectTarget=sessionStorage.getItem("freekReconnectTarget")||"";
    setTimeout(resumeFReek,250);
+   setTimeout(resumeFReek,1200);
  }
 });
+window.addEventListener("pageshow",()=>setTimeout(resumeFReek,300));
+window.addEventListener("focus",()=>setTimeout(resumeFReek,300));
 function copyInvite(){navigator.clipboard?.writeText(S.inviteUrl).then(()=>msg("Invite copied. Text it to your friend."))}
 async function shareInvite(){
  if(navigator.share){try{await navigator.share({title:"FReek",text:"Join my FReek 👀",url:S.inviteUrl})}catch(e){}}
@@ -763,5 +901,5 @@ if(incomingJoin){
   $("joinCode").value=incomingId;
 }
 </script>
-</body>
+<script>window.addEventListener("load",()=>setTimeout(()=>document.getElementById("introSplash")?.remove(),1700));</script></body>
 </html>
