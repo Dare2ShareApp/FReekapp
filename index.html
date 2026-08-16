@@ -7,7 +7,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <link rel="apple-touch-icon" href="icon-180.png">
 <link rel="manifest" href="manifest.json">
-<title>FReek Beta 0.3</title>
+<title>FReek Beta 1.8</title>
 
 <style>
 :root{
@@ -141,8 +141,17 @@ window.loadPeerJS=function(){
  const urls=["https://cdnjs.cloudflare.com/ajax/libs/peerjs/1.5.4/peerjs.min.js","https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js","https://cdn.jsdelivr.net/npm/peerjs@1.5.4/dist/peerjs.min.js"];
  return new Promise((resolve,reject)=>{let i=0;function next(){if(window.Peer)return resolve();if(i>=urls.length)return reject(new Error("PeerJS unavailable"));const s=document.createElement("script");s.src=urls[i++]+"?v=0.8";s.onload=()=>window.Peer?resolve():next();s.onerror=next;document.head.appendChild(s)}next()});
 };
-</script></head>
+</script><style>
+.sessionRow{display:grid!important;grid-template-columns:1fr auto!important;gap:8px!important;align-items:center}
+.sessionNameButton{width:100%;text-align:left;border:1px solid #3b3761;background:#111124;color:#fff;border-radius:16px;padding:13px 14px;font-weight:900;font-size:15px}
+.sessionMeta{display:block;color:#8e8ba8;font-size:11px;margin-top:3px;font-weight:600}
+.sessionActions{display:flex;gap:6px;align-items:center}
+.sessionX{width:40px;height:40px;border-radius:50%;padding:0!important;font-size:20px!important;line-height:1}
+.connectedSession .sessionActions .shareBtn,.connectedSession .sessionActions .openBtn{display:none!important}
+</style></head>
 <body>
+</div>
+
 <div class="app">
   <div class="top"><div class="logo"><span class="fr">FR</span><span class="eek">eek</span></div><div class="mascot">👀</div></div>
   <div class="tag">Pick a number. Be brave. 👀</div>
@@ -156,9 +165,9 @@ window.loadPeerJS=function(){
     </div>
     <div id="joinBox" class="hidden">
       <input id="joinCode" placeholder="Enter the 6-digit FReek ID">
-      <button class="btn pink" onclick="joinGame()">JOIN NOW</button>
+      <button class="btn pink" onclick="joinGame()">JOIN FReek</button>
     </div>
-    <div class="small" style="margin-top:12px">Your name is chosen after you start or join a session, so every FReek session can use a different name.</div>
+    <div class="small" style="margin-top:12px">Create a FReek, name the session, then choose your name. Or enter a 6-digit ID and tap JOIN FReek.</div>
     <section id="mainSessions" class="card hidden" style="margin-top:16px">
       <div class="pill">OPEN FReek SESSIONS</div>
       <div id="mainSessionList" class="sessionList"></div>
@@ -268,7 +277,7 @@ window.loadPeerJS=function(){
     </section>
   </section>
 
-  <div class="small center">FReek Beta 1.4 · Session Screens + Shared Wheel</div>
+  <div class="small center">FReek Beta 1.8 · Clean Main Screen + Independent Sessions</div>
 </div>
 
 <script>
@@ -296,16 +305,27 @@ function renderSessions(){
  boxes.forEach(box=>{
    box.innerHTML="";
    S.sessions.forEach(s=>{
-     const row=document.createElement("div");row.className="sessionRow";
-     const code=document.createElement("div");code.className="sessionCode";code.textContent=s.id;
-     const open=document.createElement("button");open.className="btn";open.textContent="OPEN";open.onclick=()=>openSessionScreen(s.id);
+     const row=document.createElement("div");
+     row.className="sessionRow "+(s.status==="connected"?"connectedSession":"");
+     const nameBtn=document.createElement("button");
+     nameBtn.className="sessionNameButton";
+     nameBtn.innerHTML="";
+     const title=document.createElement("span");
+     title.textContent=s.sessionName||("FReek "+s.id);
+     const meta=document.createElement("span");
+     meta.className="sessionMeta";
+     meta.textContent=s.status==="connected"?"CONNECTED ✓":"Waiting for friend • ID "+s.id;
+     nameBtn.append(title,meta);
+     nameBtn.onclick=()=>openSessionScreen(s.id);
+     const actions=document.createElement("div");actions.className="sessionActions";
      const copy=document.createElement("button");copy.className="btn dark";copy.textContent="COPY";
      copy.onclick=()=>navigator.clipboard?.writeText(s.id).then(()=>msg("FReek ID "+s.id+" copied."));
-     const share=document.createElement("button");share.className="btn pink";share.textContent="SHARE";
+     const share=document.createElement("button");share.className="btn pink shareBtn";share.textContent="SHARE";
      share.onclick=()=>shareSession(s);
-     const close=document.createElement("button");close.className="btn danger";close.textContent="CLOSE";
+     const close=document.createElement("button");close.className="btn danger sessionX";close.textContent="×";close.title="Close session";
      close.onclick=()=>closeSession(s.id);
-     row.append(code,open,copy,share,close);box.appendChild(row);
+     actions.append(copy,share,close);
+     row.append(nameBtn,actions);box.appendChild(row);
    });
  });
  const main=$("mainSessions");
@@ -378,17 +398,18 @@ async function newSession(){
  if(S.role!=="host")return msg("Only the FReek creator can open extra sessions.");
  if(S.sessions.length>=5)return msg("You can have up to 5 waiting FReek sessions.");
  const session=await createHostSession();
- session.name=(prompt("What name should this FReek use?","Player 1")||"Player 1").trim().slice(0,24)||"Player 1";
+ session.sessionName=(prompt("Name this FReek session","My FReek")||"My FReek").trim().slice(0,32)||"My FReek";
+ session.name=(prompt("What name should you use in this FReek?","Player 1")||"Player 1").trim().slice(0,24)||"Player 1";
  S.name=session.name;
  renderSessions();
  openSessionScreen(session.id);
 }
 function setupConnection(c,session){
  S.conn=c;
- if(session){session.conn=c;session.status="connected";if(!S.activeSession)S.activeSession=session;}
+ if(session){session.conn=c;session.status="connected";renderSessions();if(!S.activeSession)S.activeSession=session;}
  c.on("open",()=>{
    setStatus("Connected ✓");
-   c.send({t:"hello",name:(session?.name||S.name),count:S.media.length});
+   c.send({t:"hello",name:(session?.name||S.name),sessionName:(session?.sessionName||"FReek"),count:S.media.length});
    if(S.role==="host") show("inviteBox",true);
  });
  c.on("data",onData);
@@ -407,7 +428,7 @@ function resumeFReek(){
 function onData(d){
  if(d instanceof ArrayBuffer || d instanceof Blob){return}
  if(d.t==="hello"){
-   S.other=d.name||"Friend";S.otherCount=d.count||0;
+   S.other=d.name||"Friend"; if(S.activeSession && d.sessionName) S.activeSession.sessionName=d.sessionName; renderSessions();S.otherCount=d.count||0;
    $("otherLabel").textContent=S.other;$("friendNameA").textContent=S.other;$("theirNameA").textContent=S.other;
    $("friendCount").textContent=S.otherCount;
    csend({t:"helloAck",name:S.name,count:S.media.length});
@@ -464,8 +485,10 @@ async function createGame(){
   await window.loadPeerJS(); if(typeof Peer!=="function")throw new Error("PeerJS unavailable");
   S.role="host";
   const session=await createHostSession();
-  session.name=(prompt("What name should this FReek use?","Player 1")||"Player 1").trim().slice(0,24)||"Player 1";
+  session.sessionName=(prompt("Name this FReek session","My FReek")||"My FReek").trim().slice(0,32)||"My FReek";
+  session.name=(prompt("What name should you use in this FReek?","Player 1")||"Player 1").trim().slice(0,24)||"Player 1";
   S.name=session.name;
+  renderSessions();
   renderSessions();
   openSessionScreen(session.id);
   if(btn){btn.disabled=false;btn.textContent="CREATE FReek"}
@@ -519,7 +542,7 @@ async function joinGame(){
   await window.loadPeerJS();if(typeof Peer!=="function")throw new Error("PeerJS unavailable");S.role="guest";
   S.peer=new Peer(undefined,peerOptions());
   S.peer.on("open",()=>{
-   const session={id:raw,peer:S.peer,conn:null,status:"connecting",name:S.name,chat:[]};
+   const session={id:raw,peer:S.peer,conn:null,status:"connecting",name:S.name,sessionName:"FReek",chat:[]};
    S.sessions.push(session);S.activeSession=session;renderSessions();
    const c=S.peer.connect(raw,{reliable:true,serialization:"binary",metadata:{app:"FReek",version:"1.4"}});
    setupConnection(c,session);
@@ -645,8 +668,18 @@ function openSneek(){
    const wrap=document.createElement("div");wrap.className="thumb";
    const b=document.createElement("button");b.textContent="OPTION";
    b.onclick=()=>{S.sneekChoice=i;document.querySelectorAll(".thumb").forEach(x=>x.classList.remove("selected"));wrap.classList.add("selected")};
-   if(S.media[i].type.startsWith("video/"))wrap.innerHTML=`<video src="${URL.createObjectURL(S.media[i])}" muted></video>`;
-   else {const im=document.createElement("img");im.src=URL.createObjectURL(S.media[i]);wrap.appendChild(im)}
+   const f=S.media[i];
+   if(f.type.startsWith("video/")){
+     const u=URL.createObjectURL(f);S.urls.push(u);
+     const vm=document.createElement("video");vm.src=u;vm.muted=true;vm.playsInline=true;wrap.appendChild(vm);
+     vm.onerror=()=>{wrap.insertAdjacentHTML("afterbegin","<div class='notice'>Video preview unavailable</div>")};
+   } else {
+     const im=document.createElement("img");im.alt="Sneek option";
+     im.onload=()=>{};im.onerror=()=>{
+       const reader=new FileReader();reader.onload=()=>{im.src=reader.result};reader.readAsDataURL(f);
+     };
+     const u=URL.createObjectURL(f);S.urls.push(u);im.src=u;wrap.appendChild(im);
+   }
    wrap.appendChild(b);box.appendChild(wrap);
  });
  show("ownerDecision",false);show("sneekBox",true);

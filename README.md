@@ -1,48 +1,40 @@
-# FReek Beta 0.6 — Turn Wheel + Turn Engine
+# FReek Beta 1.8 — Clean Main Screen + Independent Sessions
 
-This build fixes the biggest beta problems from 0.2:
+## What changed
 
-- The invite now uses the full PeerJS connection ID inside a shareable URL. The old "last 8 characters" display was not a valid connection code.
-- The two players' media counts are synchronized. The picker chooses from the OTHER player's count, not their own.
-- Turns are locked. One player picks a number; the owner decides FR PEEK or EEK SNEEK; only after the FReek is delivered does the next turn begin.
-- EEK SNEEK no longer randomly sends an item. The owner gets exactly 3 alternative choices and must select one.
-- File transfer is chunked and buffered before the recipient renders the file, fixing the blank-media behavior caused by trying to display an incomplete transfer.
-- The UI explains whose turn it is and whose pool the number applies to.
-- The approved app icon assets are included.
+- Removed the splash animation completely. FReek now opens directly to the main screen.
+- Kept the existing FReek mascot/logo and blue/pink visual identity unchanged.
+- Main screen uses one simple join flow:
+  - **CREATE FReek**
+  - **6-digit ID**
+  - **JOIN FReek**
+- A shared invite link automatically fills the session ID; the recipient only needs to tap **JOIN FReek**.
+- Manual 6-digit ID entry is supported.
+- Creating a session asks for a **session name** and **player name**.
+- Session names are clickable in the open-session list.
+- Connected sessions hide the extra OPEN/SHARE controls; the session has an **×** close control.
+- Sessions remain independent and have their own game/chat state.
+- Chat is available inside each session.
+- Existing shared-wheel, turn-taking, media-pool, and media-transfer behavior remains in this beta.
+- README is updated with each build.
 
-Important beta limitations:
-- This is still a browser/PWA beta, not a production App Store build.
-- A browser requires the player to select the media pool; production should use native photo-library access.
-- PeerJS's public signaling service is used for this beta. Production should use a dedicated backend/signaling service.
-- EEK SNEEK displays the $0.99 concept but does not charge real money yet.
-- Production still needs authentication, durable rooms, reconnect handling, push notifications, native media permissions, real in-app purchases, moderation/reporting, analytics, privacy/retention controls, and final store compliance.
-- Keep test media non-sensitive; this beta is for controlled testing.
+## Current beta flow
 
-Test:
-1. Open the host link on Phone A and create a FReek.
-2. Tap SHARE INVITE and send the link to Phone B.
-3. Phone B opens the link and joins.
-4. Both select at least 5 items and tap READY.
-5. Phone A starts: Phone B's item count appears. Phone A picks a number.
-6. Phone B sees the exact selected item and chooses FR PEEK or EEK SNEEK.
-7. EEK SNEEK shows 3 alternatives. Select one and send.
-8. Phone A receives the media, then the next turn starts.
-9. Repeat the same number in later turns. The point is to see whether the recipient can catch a sneek.
+**Main screen → Create/Join → Session name + player name → independent game/chat screen.**
 
+Invite flow:
 
-## 0.5 connection fix
+**Share link → FReek opens → ID fills automatically → JOIN FReek.**
 
-The browser now gives PeerJS multiple ICE paths, including the Open Relay TURN service on ports 80 and 443. TURN is specifically designed to relay WebRTC traffic when two devices cannot establish a direct path. This is intended to address the `negotiation-failed` result seen on the iPhone beta.
+## Files to upload
 
-The Open Relay documentation lists the public test configuration used here and notes that TURN is needed when a direct WebRTC connection cannot be established. This public test configuration is suitable for controlled beta testing, not the final production app. Production should use application-scoped/dynamic TURN credentials and a managed signaling/backend layer.
+- `index.html`
+- `manifest.json`
+- `icon-180.png`
+- `icon-192.png`
+- `icon-512.png`
+- `README.md`
 
+## Important
 
-## 0.6 gameplay fixes
-
-- Explicit turn engine: picker -> owner decides -> media delivered -> picker role alternates.
-- The player who just picked does NOT pick again after receiving a response; the other player becomes the picker.
-- First turn is selectable by Player 1: Player 1, Player 2, or a visual spin wheel.
-- The selected number is locked while the owner decides so it cannot be cleared by state changes.
-- File delivery now uses ordered base64 chunks rather than relying on partial binary objects being immediately renderable.
-- The recipient only renders the media after all chunks have arrived.
-- EEK SNEEK still remains secret; the receiver is never told which path was used.
+Upload all six files to the same GitHub Pages repository/folder. Do not upload the old `splash.gif`; Beta 1.8 does not use it.
