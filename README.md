@@ -1,21 +1,20 @@
-# FReek Beta 2.0
+# FReek — Brand + UX Refresh 2.1
 
-- Simplified main Join flow.
-- Connected sessions hide Copy/Share.
-- Individual sessions no longer show the global session list.
-- Game, FReek decision, received media, and chat are contained in the active session.
-- Received FReeks are near the top of the session.
-- Old Build your FReek pool + READY workflow is replaced by a compact photo chooser that automatically marks the player ready after 3+ items.
-- Browser privacy still requires the user to choose camera-roll media.
-- FR PEEK / EEK SNEEK owner preview uses a FileReader-first renderer so the selected picture is visible before the decision.
-- Received media renders in-app.
-- YOU GO FIRST / THEY GO FIRST are removed.
-- The shared wheel is the only first-turn selector. Player 1 controls it; both phones see the same spin/result.
-- Selected media is stored in IndexedDB.
-- PeerJS reconnection is attempted after visibility/focus/pageshow and connection close.
-- Notification UI detects iPhone/Safari limitations instead of reporting unsupported notifications as simply OFF.
+## What changed
+- Exact approved FReek mascot is now the master mascot asset.
+- Exact approved FReek wordmark is now used as the app logo everywhere.
+- Main screen simplified to: **CREATE FReek → ID box → JOIN FReek**.
+- Shared join links still auto-fill the 6-digit ID.
+- Session/player naming moved into a single, simple in-app start sheet instead of browser prompts.
+- Branding is consistent across home, sessions, game, chat, wheel, receiving and waiting states.
+- Mascot and rotating FReek phrases add personality without forcing one rigid tagline.
+- Notifications no longer throw a blocking browser error; availability/permission state is shown cleanly.
+- Reconnect/state recovery strengthened for returning from lock/background/another app.
+- Chat/session state is synchronized again after reconnect.
+- Photo selection remains automatic after 3+ items; no READY button.
 
-## Platform limitation
-GitHub Pages + PeerJS cannot guarantee a live WebRTC data channel while iOS has fully suspended or killed the page. Reconnect is best-effort.
+## Important platform limitation
+A GitHub Pages browser app cannot keep a live WebRTC connection running while iOS has fully suspended the page. FReek now reconnects and restores state automatically when the user returns. True locked-screen remote notifications require a push-notification backend/service (APNs/Web Push); this static beta does not pretend otherwise.
 
-True locked-screen remote notifications require a push-notification backend/service-worker subscription system. PeerJS alone cannot wake a suspended/killed iPhone web app.
+## Upload
+Upload the complete folder contents to GitHub Pages.

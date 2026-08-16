@@ -6,6 +6,7 @@
 <meta name="theme-color" content="#070914">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <link rel="apple-touch-icon" href="icon-180.png">
+<link rel="icon" type="image/png" href="logo.png">
 <link rel="manifest" href="manifest.json">
 <title>FReek Beta 2.0</title>
 
@@ -201,6 +202,31 @@ input:focus{border-color:var(--blue);box-shadow:0 0 0 4px #159dff16}
 #game>#done{order:10!important}
 #introSplash img{width:180px;height:145px;object-fit:contain;border-radius:0}
 .introWord{margin-top:-8px}
+
+/* FReek brand refresh 2.1 */
+.brandLogo{display:block;width:min(92vw,420px);height:auto;margin:2px auto 5px;filter:drop-shadow(0 10px 24px #0008)}
+.brandMascot{display:block;width:110px;height:110px;object-fit:contain;margin:2px auto -4px;filter:drop-shadow(0 12px 22px #0009);animation:mascotBob 3.5s ease-in-out infinite}
+@keyframes mascotBob{50%{transform:translateY(-5px) rotate(1deg)}}
+.heroTag{font-size:17px;font-weight:950;color:#f7f7ff;margin:3px 0 16px;letter-spacing:.1px}
+.brandLine{display:flex;align-items:center;justify-content:center;gap:9px;color:#b8bdd3;font-weight:800;font-size:13px}
+.brandLine img{width:34px;height:34px;object-fit:contain}
+.homeActions{display:grid;gap:10px;margin-top:18px}
+.joinHint{font-size:12px;color:#8f94ad;text-align:center;margin-top:8px}
+.moodCard{display:flex;align-items:center;gap:12px;margin-top:14px;padding:10px 12px;border:1px solid #3a3658;border-radius:20px;background:linear-gradient(135deg,#101a2b,#1a1022)}
+.moodCard img{width:58px;height:58px;object-fit:contain;flex:0 0 auto}
+.moodCard strong{display:block;font-size:14px}.moodCard span{display:block;color:#9ea4bc;font-size:12px;margin-top:2px}
+#notifyStatus{margin-top:8px}
+.toast{position:fixed;left:50%;bottom:20px;transform:translate(-50%,20px);z-index:10001;max-width:min(92vw,460px);padding:13px 16px;border-radius:16px;background:#151525ee;border:1px solid #4c486b;box-shadow:0 16px 40px #000b;color:#fff;font-weight:800;opacity:0;pointer-events:none;transition:.2s}
+.toast.show{opacity:1;transform:translate(-50%,0)}
+.modalBackdrop{position:fixed;inset:0;z-index:10000;background:#02020bd9;display:grid;place-items:center;padding:18px;backdrop-filter:blur(12px)}
+.modalCard{width:min(100%,440px);background:linear-gradient(150deg,#17172a,#0b0b17);border:1px solid #4a4667;border-radius:28px;padding:22px;box-shadow:0 25px 80px #000d}
+.modalCard img{width:82px;height:82px;object-fit:contain;display:block;margin:-4px auto 5px}
+.modalCard h2{text-align:center;margin:0 0 5px;font-size:29px}.modalCard p{text-align:center;color:#9fa4bc;margin:0 0 12px;line-height:1.45}
+.modalCard label{display:block;color:#b7bad0;font-size:12px;font-weight:900;margin:10px 2px 5px;text-transform:uppercase;letter-spacing:.6px}
+.modalActions{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-top:12px}
+.sessionActions .btn{min-width:0}
+.brandMini{display:block;width:92px;height:auto;max-height:34px;object-fit:contain;filter:drop-shadow(0 4px 10px #0008)}
+.connectionQuiet{color:#b8bdd3!important}
 </style>
 <script>
 window.loadPeerJS=function(){
@@ -220,20 +246,45 @@ window.loadPeerJS=function(){
 
 </div>
 
+<div id="setupModal" class="modalBackdrop hidden">
+  <div class="modalCard">
+    <img src="mascot-512.png" alt="FReek">
+    <h2 id="modalTitle">Make a FReek</h2>
+    <p id="modalSubtitle">Give this session a name, then choose what your friend should call you.</p>
+    <div id="modalSessionField">
+      <label for="modalSessionName">Session name</label>
+      <input id="modalSessionName" maxlength="32" value="My FReek" placeholder="e.g. Friday Night">
+    </div>
+    <label for="modalPlayerName">Your name</label>
+    <input id="modalPlayerName" maxlength="24" value="" placeholder="What should they call you?">
+    <div class="modalActions">
+      <button class="btn dark" onclick="closeStartModal()">CANCEL</button>
+      <button id="modalGo" class="btn pink" onclick="confirmStartModal()">LET'S GO</button>
+    </div>
+  </div>
+</div>
+<div id="toast" class="toast"></div>
+
 <div class="app">
-  <div class="top"><div class="logo"><span class="fr">FR</span><span class="eek">eek</span></div><div class="mascot">👀</div></div>
-  <div class="tag">Pick a number. Be brave. 👀</div>
+  <header class="hero" style="padding:8px 8px 4px">
+    <img class="brandLogo" src="logo.png" alt="FReek">
+    <img class="brandMascot" src="mascot-512.png" alt="FReek mascot">
+    <div class="heroTag" id="homeTagline">Wanna get FReeky?</div>
+    <div class="brandLine"><span>Pick a number. Be brave.</span><span>👀</span></div>
+  </header>
 
   <section id="home" class="card hero">
-    <h1>Pick a number.<br><span style="color:var(--blue)">FReek</span> picks the photo.</h1>
-    <p>Take turns. They pick a number from <b>your</b> pool. Then you decide how brave you feel. 😈</p>
-    <button class="btn" id="createBtn" onclick="createGame()">CREATE FReek</button>
-    <div id="joinBox" style="margin-top:12px">
+    <h1 style="font-size:30px">What are you waiting for?</h1>
+    <p>Start a FReek or jump into one your friend sent you. That's it.</p>
+    <div class="homeActions">
+      <button class="btn" id="createBtn" onclick="createGame()">CREATE FReek</button>
       <input id="joinCode" inputmode="numeric" maxlength="6" placeholder="Enter 6-digit FReek ID">
       <button class="btn pink" onclick="joinGame()">JOIN FReek</button>
     </div>
-    <div class="small" style="margin-top:12px">Create a FReek, name the session, then choose your name. Or enter a 6-digit ID and tap JOIN FReek.</div>
-    <button id="notifyBtn" class="btn dark" style="margin-top:10px" onclick="requestNotifications()">🔔 NOTIFICATIONS</button>
+    <div class="joinHint">A shared link fills the ID automatically — just tap JOIN FReek.</div>
+    <button id="notifyBtn" class="btn dark" style="margin-top:12px" onclick="requestNotifications()">🔔 NOTIFICATIONS: OFF</button>
+    <div id="notifyStatus" class="small center"></div>
+    <div class="moodCard"><img src="mascot-512.png" alt="FReek"><div><strong id="moodTitle">FReek is ready.</strong><span id="moodCopy">Let's see what happens next. 😈</span></div></div>
     <section id="mainSessions" class="card hidden" style="margin-top:16px">
       <div class="pill">OPEN FReek SESSIONS</div>
       <div id="mainSessionList" class="sessionList"></div>
@@ -244,6 +295,7 @@ window.loadPeerJS=function(){
   <section id="game" class="hidden">
     <div class="gameTop">
       <button class="btn dark backBtn" onclick="backToSessions()">← SESSIONS</button>
+      <img class="brandMini" src="logo.png" alt="FReek">
       <div class="sessionTitleWrap">
         <div id="gameSessionName" class="gameSessionName">FReek</div>
         <div id="gameSessionStatus" class="sessionMeta">CONNECTING…</div>
@@ -333,7 +385,7 @@ window.loadPeerJS=function(){
     </section>
   </section>
 
-  <div class="small center">FReek Beta 2.0 · Clean Main Screen + Independent Sessions</div>
+  <div class="small center">FReek · Play Your Way · 2.1</div>
 </div>
 
 <script>
@@ -345,6 +397,26 @@ const S={
 sessions:[],activeSession:null,reconnectTarget:""
 };
 const $=id=>document.getElementById(id);
+let startMode=null,pendingJoinId="";
+function toast(t){const x=$("toast");if(!x)return;x.textContent=t;x.classList.add("show");clearTimeout(window.__toast);window.__toast=setTimeout(()=>x.classList.remove("show"),2800)}
+function openStartModal(mode,id=""){
+ startMode=mode;pendingJoinId=id;
+ const join=mode==="join";$("setupModal").classList.remove("hidden");
+ $("modalTitle").textContent=join?"Join a FReek":"Make a FReek";
+ $("modalSubtitle").textContent=join?"One quick step: choose the name your friend will see.":"Name the session and choose the name your friend will see.";
+ $("modalSessionField").classList.toggle("hidden",join);
+ $("modalGo").textContent=join?"JOIN FReek":"CREATE FReek";
+ $("modalPlayerName").value=join?"":"Player 1";
+ setTimeout(()=>$("modalPlayerName").focus(),80);
+}
+function closeStartModal(){startMode=null;pendingJoinId="";$("setupModal").classList.add("hidden")}
+function confirmStartModal(){
+ const name=($("modalPlayerName").value||"").trim().slice(0,24)||"Player 1";
+ if(startMode==="join") return beginJoin(pendingJoinId,name);
+ const sessionName=($("modalSessionName").value||"").trim().slice(0,32)||"My FReek";
+ closeStartModal(); beginCreate(sessionName,name,startMode==="new");
+}
+
 const DB_NAME="freek-beta-2";const DB_VERSION=1;
 function dbOpen(){return new Promise((resolve,reject)=>{const r=indexedDB.open(DB_NAME,DB_VERSION);r.onupgradeneeded=()=>{const db=r.result;if(!db.objectStoreNames.contains("media"))db.createObjectStore("media",{keyPath:"key"});};r.onsuccess=()=>resolve(r.result);r.onerror=()=>reject(r.error)})}
 async function dbSaveMedia(sessionId,files){try{const db=await dbOpen();await new Promise((resolve,reject)=>{const q=db.transaction("media","readwrite").objectStore("media").put({key:String(sessionId),files:Array.from(files||[])});q.onsuccess=resolve;q.onerror=()=>reject(q.error)})}catch(e){console.warn("media persistence",e)}}
@@ -355,7 +427,7 @@ function saveSessionIndex(){try{localStorage.setItem("freek.sessions",JSON.strin
 const show=(id,on=true)=>$(id).classList.toggle("hidden",!on);
 function setStatus(t){$("connectionStatus").textContent=t}
 function cleanUrls(){S.urls.forEach(u=>URL.revokeObjectURL(u));S.urls=[]}
-function msg(t){alert(t)}
+function msg(t){toast(t)}
 function makeInvite(id){return location.origin+location.pathname+"?join="+encodeURIComponent(id)}
 function numericId(){return String(Math.floor(100000+Math.random()*900000))}
 function peerOptions(){return {host:"0.peerjs.com",port:443,path:"/",secure:true,debug:0,config:{iceServers:[
@@ -468,19 +540,14 @@ async function closeSession(id){
  renderSessions();
 }
 async function newSession(){
- if(S.role!=="host")return msg("Only the FReek creator can open extra sessions.");
- if(S.sessions.length>=5)return msg("You can have up to 5 waiting FReek sessions.");
- const session=await createHostSession();
- session.sessionName=(prompt("Name this FReek session","My FReek")||"My FReek").trim().slice(0,32)||"My FReek";
- session.name=(prompt("What name should you use in this FReek?","Player 1")||"Player 1").trim().slice(0,24)||"Player 1";
- S.name=session.name;
- renderSessions();
- openSessionScreen(session.id);
+ if(S.role!=="host")return toast("Only the FReek creator can open another session.");
+ if(S.sessions.length>=5)return toast("You can have up to 5 FReek sessions.");
+ openStartModal("new");
 }
 function setupConnection(c,session){
  S.conn=c;
  if(session){session.conn=c;session.status="connected";session.role=session.role||S.role;renderSessions();if(!S.activeSession)S.activeSession=session;}
- c.on("open",()=>{setStatus("Connected ✓");if(session){session.status="connected";session.conn=c;session.peer=S.peer;renderSessions()}c.send({t:"hello",name:(session?.name||S.name),sessionName:(session?.sessionName||"FReek"),count:S.media.length,gameStarted:!!S.gameStarted});maybeStart()});
+ c.on("open",()=>{setStatus("Connected ✓");if(session){session.status="connected";session.conn=c;session.peer=S.peer;renderSessions()}c.send({t:"hello",name:(session?.name||S.name),sessionName:(session?.sessionName||"FReek"),count:S.media.length,gameStarted:!!S.gameStarted});maybeStart();sendSync()});
  c.on("data",onData);
  c.on("close",()=>{if(S.conn===c){setStatus("Connection paused — reconnecting…");S.conn=null}if(session){session.status="waiting";session.conn=null;renderSessions()}setTimeout(resumeFReek,300);setTimeout(resumeFReek,1500);setTimeout(resumeFReek,3000)});
  c.on("error",()=>{setStatus("Connection paused — reconnecting…");setTimeout(resumeFReek,500)});
@@ -574,41 +641,39 @@ function onData(d){
  if(d.t==="endgame"){cleanup();msg("The FReek ended.")}
 }
 function csend(x){if(S.conn?.open)S.conn.send(x)}
+function sessionSnapshot(){return {name:S.name,other:S.other,count:S.media.length,otherCount:S.otherCount,ready:S.ready,gameStarted:S.gameStarted,turn:S.turn,roundId:S.roundId,chat:S.activeSession?.chat||[],sessionName:S.activeSession?.sessionName||"FReek"}}
+function sendSync(){csend({t:"sync",state:sessionSnapshot()})}
+function applySync(st){if(!st)return;if(st.sessionName&&S.activeSession)S.activeSession.sessionName=st.sessionName;if(st.name)S.other=st.name;if(Number.isFinite(st.count))S.otherCount=st.count;if(st.chat&&S.activeSession){S.activeSession.chat=st.chat;renderChatHistory()}$("otherLabel").textContent=S.other;$("friendCount").textContent=S.otherCount;$("theirNameA").textContent=S.other;$("gameSessionName").textContent=S.activeSession?.sessionName||"FReek";if(st.gameStarted&&!S.gameStarted){S.gameStarted=true;setTurn(st.turn!==S.role)}updateFirstControls();renderSessions()}
+
 function isIOS(){return /iPad|iPhone|iPod/.test(navigator.userAgent)||(/Macintosh/.test(navigator.userAgent)&&"ontouchend"in document)}
 function isStandalone(){return window.matchMedia?.("(display-mode: standalone)")?.matches||window.navigator.standalone===true}
 function updateNotificationButton(){
- const b=$("notifyBtn");if(!b)return;
- if(!("Notification" in window)){b.textContent=isIOS()&&!isStandalone()?"🔔 ADD FReek TO HOME SCREEN":"🔔 NOTIFICATIONS UNAVAILABLE";b.disabled=true;return}
+ const b=$("notifyBtn"),s=$("notifyStatus");if(!b)return;
+ if(!("Notification" in window)){b.textContent=isIOS()&&!isStandalone()?"🔔 ADD FReek TO HOME SCREEN":"🔔 NOTIFICATIONS UNAVAILABLE";b.disabled=true;if(s)s.textContent=isIOS()&&!isStandalone()?"Install FReek to your Home Screen to use iPhone notifications.":"This browser does not provide notifications.";return}
  b.disabled=false;
- if(Notification.permission==="granted")b.textContent="🔔 NOTIFICATIONS: ON";
- else if(Notification.permission==="denied")b.textContent="🔕 NOTIFICATIONS BLOCKED";
- else b.textContent=isIOS()&&!isStandalone()?"🔔 ENABLE IN FReek APP":"🔔 NOTIFICATIONS: OFF";
+ if(Notification.permission==="granted"){b.textContent="🔔 NOTIFICATIONS: ON";if(s)s.textContent="New FReeks and chats can alert you while FReek is active."}
+ else if(Notification.permission==="denied"){b.textContent="🔕 NOTIFICATIONS: BLOCKED";if(s)s.textContent="Turn notifications back on in your device/browser settings."}
+ else{b.textContent="🔔 NOTIFICATIONS: OFF";if(s)s.textContent=isIOS()&&!isStandalone()?"Add FReek to your Home Screen first for iPhone notifications.":"Turn them on whenever you want."}
 }
 async function requestNotifications(){
- if(isIOS()&&!isStandalone())return msg("On iPhone, add FReek to your Home Screen and open it there to enable notifications.");
- if(!("Notification" in window))return msg("This browser cannot provide FReek notifications.");
- if(Notification.permission==="denied")return msg("Notifications are blocked. Turn them back on in your device/browser settings.");
- try{await Notification.requestPermission();updateNotificationButton()}catch(e){msg("Could not request notification permission.")}
+ if(isIOS()&&!isStandalone()){toast("On iPhone, add FReek to your Home Screen first.");updateNotificationButton();return}
+ if(!("Notification" in window)){toast("Notifications aren't available in this browser.");updateNotificationButton();return}
+ if(Notification.permission==="denied"){toast("Notifications are blocked. You can re-enable them in settings.");updateNotificationButton();return}
+ try{await Notification.requestPermission();updateNotificationButton();if(Notification.permission==="granted")toast("Notifications are on. 👀");}catch(e){toast("FReek couldn't request notifications here. Try again from the app settings.");updateNotificationButton()}
 }
 updateNotificationButton();
-async function createGame(){
+async function createGame(){openStartModal("create");}
+async function beginCreate(sessionName,playerName,isExtra=false){
  const btn=$("createBtn"); if(btn){btn.disabled=true;btn.textContent="STARTING…"}
  show("home",false);show("game",true);setStatus("Starting your FReek…");
  try{
   await window.loadPeerJS(); if(typeof Peer!=="function")throw new Error("PeerJS unavailable");
   S.role="host";
   const session=await createHostSession();
-  session.sessionName=(prompt("Name this FReek session","My FReek")||"My FReek").trim().slice(0,32)||"My FReek";
-  session.name=(prompt("What name should you use in this FReek?","Player 1")||"Player 1").trim().slice(0,24)||"Player 1";
-  S.name=session.name;
-  renderSessions();
-  renderSessions();
-  openSessionScreen(session.id);
+  session.sessionName=sessionName;session.name=playerName;S.name=playerName;
+  renderSessions();openSessionScreen(session.id);
   if(btn){btn.disabled=false;btn.textContent="CREATE FReek"}
- }catch(e){
-  console.error(e);show("home",true);show("game",false);setStatus("Couldn't start FReek. Reload and try again.");
-  if(btn){btn.disabled=false;btn.textContent="CREATE FReek"}
- }
+ }catch(e){console.error(e);show("home",true);show("game",false);toast("Couldn't start FReek. Try again.");if(btn){btn.disabled=false;btn.textContent="CREATE FReek"}}
 }
 function createHostSession(){
  return new Promise((resolve,reject)=>{
@@ -640,29 +705,26 @@ function createHostSession(){
 }
 async function joinGame(){
  let raw=$("joinCode").value.trim();
- if(!raw)return msg("Enter the 6-digit FReek ID.");
- try{
-  const u=new URL(raw);
-  const fromLink=u.searchParams.get("join");
-  if(fromLink) raw=fromLink;
-}catch(e){}
+ if(!raw)return toast("Enter the 6-digit FReek ID.");
+ try{const u=new URL(raw);const fromLink=u.searchParams.get("join");if(fromLink)raw=fromLink}catch(e){}
  raw=decodeURIComponent(raw).replace(/\D/g,"").slice(0,6);
- if(!/^\d{6}$/.test(raw))return msg("FReek IDs are 6 digits.");
- S.reconnectTarget=raw;sessionStorage.setItem("freekReconnectTarget",raw);
- S.name=(prompt("What name should this FReek use?","Player 2")||"Player 2").trim().slice(0,24)||"Player 2";
- show("home",false);show("game",true);setStatus("Connecting to FReek "+raw+"…");
+ if(!/^\d{6}$/.test(raw))return toast("FReek IDs are 6 digits.");
+ openStartModal("join",raw);
+}
+async function beginJoin(raw,playerName){
+ closeStartModal();
+ S.reconnectTarget=raw;sessionStorage.setItem("freekReconnectTarget",raw);S.name=playerName;
+ show("home",false);show("game",true);setStatus("Connecting to FReek…");
  try{
   await window.loadPeerJS();if(typeof Peer!=="function")throw new Error("PeerJS unavailable");S.role="guest";
   S.peer=new Peer(undefined,peerOptions());
   S.peer.on("open",()=>{
    const session={id:raw,peer:S.peer,conn:null,status:"connecting",name:S.name,sessionName:"FReek",newActivity:false,chat:[],role:"guest"};
    S.sessions.push(session);S.activeSession=session;renderSessions();
-   const c=S.peer.connect(raw,{reliable:true,serialization:"binary",metadata:{app:"FReek",version:"1.4"}});
-   setupConnection(c,session);
-   openSessionScreen(raw);
- });
-  S.peer.on("error",e=>setStatus("Connection error: "+e.type+" — waiting to reconnect…"));
- }catch(e){console.error(e);setStatus("Couldn't connect yet. Keep this screen open and FReek will retry.")}
+   const c=S.peer.connect(raw,{reliable:true,serialization:"binary",metadata:{app:"FReek",version:"2.1"}});setupConnection(c,session);openSessionScreen(raw);
+  });
+  S.peer.on("error",e=>{setStatus("Connection paused — reconnecting…");setTimeout(resumeFReek,500)});
+ }catch(e){console.error(e);setStatus("Couldn't connect yet. FReek will keep trying.")}
 }
 function readyUp(){
  if(S.media.length<3)return msg("Pick at least 3 photos/videos so FReek can start.");
@@ -834,7 +896,7 @@ function sendChat(){
  addChat(S.activeSession?.name||S.name,text,true);csend({t:"chat",name:(S.activeSession?.name||S.name),text});input.value="";input.focus();
 }
 $("chatInput").addEventListener("keydown",e=>{if(e.key==="Enter")sendChat()});
-document.addEventListener("visibilitychange",()=>{if(!document.hidden){setTimeout(resumeFReek,150);setTimeout(resumeFReek,800);setTimeout(resumeFReek,2200)}});
+document.addEventListener("visibilitychange",()=>{if(!document.hidden){setTimeout(()=>{resumeFReek();csend({t:"resume"})},150);setTimeout(()=>{resumeFReek();csend({t:"resume"})},800);setTimeout(()=>{resumeFReek();csend({t:"resume"})},2200)}});
 window.addEventListener("pageshow",()=>{setTimeout(resumeFReek,200);setTimeout(resumeFReek,1200)});
 window.addEventListener("focus",()=>setTimeout(resumeFReek,250));
 function copyInvite(){navigator.clipboard?.writeText(S.inviteUrl).then(()=>msg("Invite copied. Text it to your friend."))}
@@ -865,7 +927,6 @@ const params=new URLSearchParams(location.search);
 const incomingJoin=params.get("join");
 if(incomingJoin){
   const incomingId=decodeURIComponent(incomingJoin).replace(/\D/g,"").slice(0,6);
-  $("joinBox").classList.remove("hidden");
   $("joinCode").value=incomingId;
 }
 </script>
