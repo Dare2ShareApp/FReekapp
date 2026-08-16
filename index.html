@@ -7,7 +7,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <link rel="apple-touch-icon" href="icon-180.png">
 <link rel="manifest" href="manifest.json">
-<title>FReek Beta 1.9</title>
+<title>FReek Beta 2.0</title>
 
 <style>
 :root{
@@ -180,6 +180,27 @@ input:focus{border-color:var(--blue);box-shadow:0 0 0 4px #159dff16}
 .introWord{font-size:58px;line-height:1;font-weight:1000;letter-spacing:-4px}.introWord span{color:#20a7ff}.introWord b{color:#ff35bd}
 @keyframes introPop{0%{opacity:0;transform:scale(.7)}70%{opacity:1;transform:scale(1.08)}100%{transform:scale(1)}}
 @keyframes introFade{to{opacity:0;visibility:hidden}}
+
+
+/* FReek 2.0 */
+.wheelNames{display:flex;justify-content:space-between;gap:10px;margin:8px auto 0;max-width:330px;font-size:12px;font-weight:1000}
+.wheelNames span{padding:7px 10px;border-radius:999px;border:1px solid #3b4d6d;background:#111a2c;min-width:120px}
+#spinBtn:disabled{opacity:.45}
+#setup{padding:16px}
+#setup h2{margin:0 0 6px}
+#autoReadyStatus{border-color:#2f7356;background:#0c1d17}
+#ownerPreview{min-height:280px;background:#090914;border:1px solid #49456a;border-radius:18px;overflow:hidden;margin:12px 0}
+#ownerPreview .media,#receivedMedia .media{display:block;width:100%;height:auto;max-height:560px;min-height:260px;object-fit:contain;background:#05050c}
+#game>#ownerDecision{order:3!important}
+#game>#received{order:3!important}
+#game>#startChoice{order:4!important}
+#game>#sneekBox{order:4!important}
+#game>#setup{order:5!important}
+#game>#turnBox{order:6!important}
+#game>#chat{order:9!important}
+#game>#done{order:10!important}
+#introSplash img{width:180px;height:145px;object-fit:contain;border-radius:0}
+.introWord{margin-top:-8px}
 </style>
 <script>
 window.loadPeerJS=function(){
@@ -195,7 +216,7 @@ window.loadPeerJS=function(){
 .sessionX{width:40px;height:40px;border-radius:50%;padding:0!important;font-size:20px!important;line-height:1}
 .connectedSession .sessionActions .shareBtn,.connectedSession .sessionActions .openBtn{display:none!important}
 </style></head>
-<body><div id="introSplash" aria-label="FReek"><img src="icon-512.png" alt="FReek"><div class="introWord"><span>FR</span><b>eek</b></div></div>
+<body><div id="introSplash" aria-label="FReek"><img src="mascot-512.png" alt="FReek mascot"><div class="introWord"><span>FR</span><b>eek</b></div></div>
 
 </div>
 
@@ -212,7 +233,7 @@ window.loadPeerJS=function(){
       <button class="btn pink" onclick="joinGame()">JOIN FReek</button>
     </div>
     <div class="small" style="margin-top:12px">Create a FReek, name the session, then choose your name. Or enter a 6-digit ID and tap JOIN FReek.</div>
-    <button id="notifyBtn" class="btn dark" style="margin-top:10px" onclick="requestNotifications()">🔔 NOTIFICATIONS: OFF</button>
+    <button id="notifyBtn" class="btn dark" style="margin-top:10px" onclick="requestNotifications()">🔔 NOTIFICATIONS</button>
     <section id="mainSessions" class="card hidden" style="margin-top:16px">
       <div class="pill">OPEN FReek SESSIONS</div>
       <div id="mainSessionList" class="sessionList"></div>
@@ -253,35 +274,27 @@ window.loadPeerJS=function(){
 
 <section id="startChoice" class="card hidden center">
   <div class="pill">WHO GOES FIRST?</div>
-  <h2 style="margin:14px 0 7px;font-size:30px">Set the first move.</h2>
-  <p class="muted">You can choose, or let FReek spin the wheel. The wheel decides once — then the game alternates automatically.</p>
+  <h2 style="margin:14px 0 7px;font-size:30px">FReek decides.</h2>
+  <p class="muted">Both players see the same wheel. Player 1 controls the spin. The result is shared automatically.</p>
+  <div class="wheelNames"><span id="wheelPlayer1">PLAYER 1</span><span id="wheelPlayer2">PLAYER 2</span></div>
   <div id="wheelWrap" style="margin:18px auto 10px;position:relative;width:250px;height:250px">
     <div id="wheelPointer" style="position:absolute;z-index:4;left:50%;top:-4px;transform:translateX(-50%);font-size:28px;text-shadow:0 3px 8px #000">▼</div>
-    <div id="turnWheel" style="width:250px;height:250px;border-radius:50%;border:7px solid #35324f;box-shadow:0 16px 35px #0009;display:grid;place-items:center;background:conic-gradient(
- #20a7ff 0deg 36deg,#ff35bd 36deg 72deg,
- #20a7ff 72deg 108deg,#ff35bd 108deg 144deg,
- #20a7ff 144deg 180deg,#ff35bd 180deg 216deg,
- #20a7ff 216deg 252deg,#ff35bd 252deg 288deg,
- #20a7ff 288deg 324deg,#ff35bd 324deg 360deg);transition:transform 2.7s cubic-bezier(.12,.75,.14,1)">
+    <div id="turnWheel" style="width:250px;height:250px;border-radius:50%;border:7px solid #35324f;box-shadow:0 16px 35px #0009;display:grid;place-items:center;background:conic-gradient(#20a7ff 0deg 36deg,#ff35bd 36deg 72deg,#20a7ff 72deg 108deg,#ff35bd 108deg 144deg,#20a7ff 144deg 180deg,#ff35bd 180deg 216deg,#20a7ff 216deg 252deg,#ff35bd 252deg 288deg,#20a7ff 288deg 324deg,#ff35bd 324deg 360deg);transition:transform 2.7s cubic-bezier(.12,.75,.14,1)">
       <div style="width:92px;height:92px;border-radius:50%;background:#090914;border:2px solid #5c5878;display:grid;place-items:center;font-weight:1000;font-size:15px">FReek<br>SPIN</div>
     </div>
   </div>
-  <div class="row">
-    <button id="firstMeBtn" class="btn" onclick="chooseFirst('me')">YOU GO FIRST</button>
-    <button id="firstThemBtn" class="btn pink" onclick="chooseFirst('them')">THEY GO FIRST</button>
-  </div>
   <button id="spinBtn" class="btn dark" onclick="spinFirst()">🎡 SPIN TO DECIDE</button>
+  <div id="spinWaiting" class="small" style="margin-top:8px">Waiting for both players…</div>
   <div id="firstResult" class="notice hidden" style="margin-top:12px;font-size:18px;font-weight:950"></div>
 </section>
 
 <section id="setup" class="card">
-      <h2>Build your FReek pool</h2>
-      <p class="muted">Select the photos/videos you want available. Only this pool is used in the game.</p>
-      <input id="media" type="file" accept="image/*,video/*" multiple>
-      <div id="poolInfo" class="small" style="margin-top:8px">0 items selected.</div>
-      
-      <button id="readyBtn" class="btn" onclick="readyUp()">READY ✓</button>
-    </section>
+  <h2>Choose your photos</h2>
+  <p class="muted">Pick at least 3 photos/videos once. FReek handles the rest automatically — no READY button or camera-roll preview.</p>
+  <input id="media" type="file" accept="image/*,video/*" multiple>
+  <div id="poolInfo" class="small" style="margin-top:8px">Choose 3 or more items to start.</div>
+  <div id="autoReadyStatus" class="notice hidden" style="margin-top:10px">Photos ready ✓ Waiting for the other player.</div>
+</section>
 
     <section id="turnBox" class="hidden">
       <div id="myTurn" class="card turn hidden">
@@ -320,7 +333,7 @@ window.loadPeerJS=function(){
     </section>
   </section>
 
-  <div class="small center">FReek Beta 1.9 · Clean Main Screen + Independent Sessions</div>
+  <div class="small center">FReek Beta 2.0 · Clean Main Screen + Independent Sessions</div>
 </div>
 
 <script>
@@ -332,6 +345,13 @@ const S={
 sessions:[],activeSession:null,reconnectTarget:""
 };
 const $=id=>document.getElementById(id);
+const DB_NAME="freek-beta-2";const DB_VERSION=1;
+function dbOpen(){return new Promise((resolve,reject)=>{const r=indexedDB.open(DB_NAME,DB_VERSION);r.onupgradeneeded=()=>{const db=r.result;if(!db.objectStoreNames.contains("media"))db.createObjectStore("media",{keyPath:"key"});};r.onsuccess=()=>resolve(r.result);r.onerror=()=>reject(r.error)})}
+async function dbSaveMedia(sessionId,files){try{const db=await dbOpen();await new Promise((resolve,reject)=>{const q=db.transaction("media","readwrite").objectStore("media").put({key:String(sessionId),files:Array.from(files||[])});q.onsuccess=resolve;q.onerror=()=>reject(q.error)})}catch(e){console.warn("media persistence",e)}}
+async function dbLoadMedia(sessionId){try{const db=await dbOpen();return await new Promise((resolve,reject)=>{const q=db.transaction("media","readonly").objectStore("media").get(String(sessionId));q.onsuccess=()=>resolve(q.result?.files||[]);q.onerror=()=>reject(q.error)})}catch(e){return []}}
+async function dbDeleteMedia(sessionId){try{const db=await dbOpen();db.transaction("media","readwrite").objectStore("media").delete(String(sessionId))}catch(e){}}
+function saveSessionIndex(){try{localStorage.setItem("freek.sessions",JSON.stringify(S.sessions.map(s=>({id:s.id,role:s.role||S.role,status:s.status,sessionName:s.sessionName,name:s.name,other:s.other,newActivity:!!s.newActivity}))));}catch(e){}}
+
 const show=(id,on=true)=>$(id).classList.toggle("hidden",!on);
 function setStatus(t){$("connectionStatus").textContent=t}
 function cleanUrls(){S.urls.forEach(u=>URL.revokeObjectURL(u));S.urls=[]}
@@ -380,6 +400,7 @@ function renderSessions(){
  });
  const main=$("mainSessions");
  if(main) main.classList.toggle("hidden",S.sessions.length===0);
+ saveSessionIndex();
 }
 function saveActiveSession(){
  const s=S.activeSession;if(!s)return;
@@ -399,18 +420,14 @@ function restoreSession(s){
  $("playerLabel").textContent=S.name;$("otherLabel").textContent=S.other;$("theirNameA").textContent=S.other;
  $("gameSessionName").textContent=s.sessionName||("FReek "+s.id);
  $("gameSessionStatus").textContent=s.status==="connected"?"CONNECTED ✓":"WAITING FOR FRIEND";
- $("firstMeBtn").textContent=S.name+" GOES FIRST";
- $("firstThemBtn").textContent=S.other+" GOES FIRST";
- $("firstMeBtn").disabled=S.role!=="host";$("firstThemBtn").disabled=S.role!=="host";
  if(S.gameStarted){show("startChoice",false);setTurn(S.turn==="me")}
 }
-function openSessionScreen(id){
+async function openSessionScreen(id){
  const s=S.sessions.find(x=>x.id===id);if(!s)return;
- s.newActivity=false;
- $("chatNewIndicator")?.classList.add("hidden");
+ s.newActivity=false;$("chatNewIndicator")?.classList.add("hidden");
  saveActiveSession();restoreSession(s);
- show("home",false);show("game",true);
- setStatus(s.status==="connected"?"Connected ✓":"FReek "+s.id+" waiting for a friend…");
+ const files=await dbLoadMedia(s.id);
+ if(files.length&&!S.media.length){S.media=files;$("poolInfo").textContent=files.length+" saved items.";if(files.length>=3)readyUp();}
 }
 function backToSessions(){
  saveActiveSession();
@@ -462,44 +479,23 @@ async function newSession(){
 }
 function setupConnection(c,session){
  S.conn=c;
- if(session){session.conn=c;session.status="connected";renderSessions();if(!S.activeSession)S.activeSession=session;}
- c.on("open",()=>{
-   setStatus("Connected ✓");
-   c.send({t:"hello",name:(session?.name||S.name),sessionName:(session?.sessionName||"FReek"),count:S.media.length});
-   if(S.role==="host") renderSessions();
- });
+ if(session){session.conn=c;session.status="connected";session.role=session.role||S.role;renderSessions();if(!S.activeSession)S.activeSession=session;}
+ c.on("open",()=>{setStatus("Connected ✓");if(session){session.status="connected";session.conn=c;session.peer=S.peer;renderSessions()}c.send({t:"hello",name:(session?.name||S.name),sessionName:(session?.sessionName||"FReek"),count:S.media.length,gameStarted:!!S.gameStarted});maybeStart()});
  c.on("data",onData);
- c.on("close",()=>{
-   if(S.conn===c){setStatus("Connection paused — reconnecting…");}
-   if(session){session.status="waiting";session.conn=null;renderSessions();}
-   if(S.role==="guest")setTimeout(resumeFReek,400);
- });
- c.on("error",e=>setStatus("Connection error: "+e.type+" — retrying…"));
+ c.on("close",()=>{if(S.conn===c){setStatus("Connection paused — reconnecting…");S.conn=null}if(session){session.status="waiting";session.conn=null;renderSessions()}setTimeout(resumeFReek,300);setTimeout(resumeFReek,1500);setTimeout(resumeFReek,3000)});
+ c.on("error",()=>{setStatus("Connection paused — reconnecting…");setTimeout(resumeFReek,500)});
 }
 async function resumeFReek(){
- if(document.hidden)return;
- if(!S.activeSession)return;
- const s=S.activeSession;
- // A phone lock/background can suspend WebRTC. Reconnect when the app returns.
- if(s.status==="connected" && s.conn?.open)return;
- try{
-   await window.loadPeerJS();
-   if(S.role==="host"){
-     if(!s.peer || s.peer.destroyed){
-       s.peer=new Peer(s.id,peerOptions());
-       s.peer.on("connection",c=>setupConnection(c,s));
-       await new Promise(resolve=>s.peer.once("open",resolve));
-     }
-     S.peer=s.peer;S.code=s.id;
-     s.status="waiting";renderSessions();
-   }else{
-     if(!S.peer || S.peer.destroyed){
-       S.peer=new Peer(undefined,peerOptions());
-       S.peer.on("open",()=>{});
-     }
-     const c=S.peer.connect(s.id,{reliable:true,serialization:"binary",metadata:{app:"FReek",version:"1.9"}});
-     setupConnection(c,s);
-   }
+ if(!S.activeSession)return;const s=S.activeSession;
+ try{await window.loadPeerJS();
+  if(S.role==="host"){
+   if(s.peer&&!s.peer.destroyed){S.peer=s.peer;if(s.peer.disconnected){try{s.peer.reconnect()}catch(_){}}}
+   else{const peer=new Peer(s.id,peerOptions());s.peer=peer;S.peer=peer;peer.on("open",()=>{s.status="waiting";renderSessions()});peer.on("connection",c=>setupConnection(c,s))}
+  }else{
+   if(!S.peer||S.peer.destroyed){S.peer=new Peer(undefined,peerOptions());S.peer.on("error",()=>{})}
+   else if(S.peer.disconnected){try{S.peer.reconnect()}catch(_){}}
+   if(!s.conn?.open){const c=S.peer.connect(s.id,{reliable:true,serialization:"binary",metadata:{app:"FReek",version:"2.0"}});setupConnection(c,s)}
+  }
  }catch(e){console.warn("resume",e)}
 }
 
@@ -526,29 +522,25 @@ function maybeNotify(kind,s){
 function onData(d){
  if(d instanceof ArrayBuffer || d instanceof Blob){return}
  if(d.t==="hello"){
-   S.other=d.name||"Friend"; if(S.activeSession && d.sessionName) S.activeSession.sessionName=d.sessionName;
-   if(S.activeSession){S.activeSession.status="connected";S.activeSession.conn=S.conn;}
-   renderSessions();S.otherCount=d.count||0;
-   $("otherLabel").textContent=S.other;$("friendNameA").textContent=S.other;$("theirNameA").textContent=S.other;
-   $("friendCount").textContent=S.otherCount;
-   csend({t:"helloAck",name:S.name,count:S.media.length});
- }
+ S.other=d.name||"Friend";if(S.activeSession&&d.sessionName)S.activeSession.sessionName=d.sessionName;
+ if(S.activeSession){S.activeSession.status="connected";S.activeSession.conn=S.conn}
+ S.otherCount=d.count||0;$("otherLabel").textContent=S.other;$("friendNameA").textContent=S.other;$("theirNameA").textContent=S.other;$("friendCount").textContent=S.otherCount;
+ $("gameSessionName").textContent=S.activeSession?.sessionName||"FReek";$("gameSessionStatus").textContent="CONNECTED ✓";
+ renderSessions();updateFirstControls();csend({t:"helloAck",name:S.name,count:S.media.length});
+}
  if(d.t==="helloAck"){
-   S.other=d.name||S.other;S.otherCount=d.count||S.otherCount;
-   $("otherLabel").textContent=S.other;$("friendCount").textContent=S.otherCount;$("theirNameA").textContent=S.other;
-   maybeStart();
- }
- if(d.t==="ready"){S.otherCount=d.count; $("friendCount").textContent=S.otherCount; if(S.role==="host")showFirstChoice();}
- if(d.t==="wheelSpin"){
-   $("turnWheel").style.transform=`rotate(${d.spin}deg)`;
- }
+ S.other=d.name||S.other;S.otherCount=d.count||S.otherCount;$("otherLabel").textContent=S.other;$("friendCount").textContent=S.otherCount;$("theirNameA").textContent=S.other;updateFirstControls();maybeStart();
+}
+ if(d.t==="ready"){S.otherCount=d.count;$("friendCount").textContent=S.otherCount;updateFirstControls();if(S.role==="host"&&S.ready){showFirstChoice();csend({t:"wheelReady"});}}
+ if(d.t==="wheelReady"){if(!S.gameStarted)showFirstChoice();}
+ if(d.t==="wheelSpin"){$("turnWheel").style.transform=`rotate(${d.spin}deg)`;$("spinBtn").disabled=true;$("spinWaiting").textContent="Spinning…";}
  if(d.t==="startGame"){
    S.gameStarted=true;
    if(d.spin!==null && d.spin!==undefined) $("turnWheel").style.transform=`rotate(${d.spin}deg)`;
    show("startChoice",false);
    const mine=d.first===S.role;
    $("firstResult").classList.remove("hidden");
-   $("firstResult").textContent=mine?S.name+" GOES FIRST 👀":S.other+" GOES FIRST 👀";
+   $("firstResult").textContent=mine?S.name+" goes first 👀":S.other+" goes first 👀";
    setTimeout(()=>setTurn(mine),500);
  }
  if(d.t==="pick"){
@@ -582,15 +574,20 @@ function onData(d){
  if(d.t==="endgame"){cleanup();msg("The FReek ended.")}
 }
 function csend(x){if(S.conn?.open)S.conn.send(x)}
+function isIOS(){return /iPad|iPhone|iPod/.test(navigator.userAgent)||(/Macintosh/.test(navigator.userAgent)&&"ontouchend"in document)}
+function isStandalone(){return window.matchMedia?.("(display-mode: standalone)")?.matches||window.navigator.standalone===true}
 function updateNotificationButton(){
  const b=$("notifyBtn");if(!b)return;
- const on=("Notification" in window && Notification.permission==="granted");
- b.textContent=on?"🔔 NOTIFICATIONS: ON":"🔔 NOTIFICATIONS: OFF";
+ if(!("Notification" in window)){b.textContent=isIOS()&&!isStandalone()?"🔔 ADD FReek TO HOME SCREEN":"🔔 NOTIFICATIONS UNAVAILABLE";b.disabled=true;return}
+ b.disabled=false;
+ if(Notification.permission==="granted")b.textContent="🔔 NOTIFICATIONS: ON";
+ else if(Notification.permission==="denied")b.textContent="🔕 NOTIFICATIONS BLOCKED";
+ else b.textContent=isIOS()&&!isStandalone()?"🔔 ENABLE IN FReek APP":"🔔 NOTIFICATIONS: OFF";
 }
 async function requestNotifications(){
- if(!("Notification" in window))return msg("This browser does not support notifications.");
- if(Notification.permission==="granted"){updateNotificationButton();return msg("Notifications are already enabled. You can turn them off in your device/browser settings.")}
- if(Notification.permission==="denied"){return msg("Notifications are blocked for FReek. Turn them on in your device/browser settings.")}
+ if(isIOS()&&!isStandalone())return msg("On iPhone, add FReek to your Home Screen and open it there to enable notifications.");
+ if(!("Notification" in window))return msg("This browser cannot provide FReek notifications.");
+ if(Notification.permission==="denied")return msg("Notifications are blocked. Turn them back on in your device/browser settings.");
  try{await Notification.requestPermission();updateNotificationButton()}catch(e){msg("Could not request notification permission.")}
 }
 updateNotificationButton();
@@ -621,7 +618,7 @@ function createHostSession(){
      const id=numericId();
      let peer;
      try{peer=new Peer(id,peerOptions())}catch(e){return attempt()}
-     const session={id,peer,conn:null,status:"waiting",name:"",sessionName:"My FReek",newActivity:false,chat:[]};
+     const session={id,peer,conn:null,status:"waiting",name:"",sessionName:"My FReek",newActivity:false,chat:[],role:"host"};
      let settled=false;
      peer.on("open",()=>{
        settled=true;S.sessions.push(session);S.activeSession=session;S.peer=peer;S.code=id;S.inviteUrl=makeInvite(id);
@@ -658,7 +655,7 @@ async function joinGame(){
   await window.loadPeerJS();if(typeof Peer!=="function")throw new Error("PeerJS unavailable");S.role="guest";
   S.peer=new Peer(undefined,peerOptions());
   S.peer.on("open",()=>{
-   const session={id:raw,peer:S.peer,conn:null,status:"connecting",name:S.name,sessionName:"FReek",newActivity:false,chat:[]};
+   const session={id:raw,peer:S.peer,conn:null,status:"connecting",name:S.name,sessionName:"FReek",newActivity:false,chat:[],role:"guest"};
    S.sessions.push(session);S.activeSession=session;renderSessions();
    const c=S.peer.connect(raw,{reliable:true,serialization:"binary",metadata:{app:"FReek",version:"1.4"}});
    setupConnection(c,session);
@@ -668,54 +665,37 @@ async function joinGame(){
  }catch(e){console.error(e);setStatus("Couldn't connect yet. Keep this screen open and FReek will retry.")}
 }
 function readyUp(){
- if(S.media.length<3)return msg("Pick at least 3 photos/videos so EEK SNEEK can offer 3 replacements.");
- S.ready=true;
- $("readyBtn").textContent="READY ✓";
- $("readyBtn").disabled=true;
- csend({t:"ready",count:S.media.length});
- if(S.role==="host"){ show("startChoice",true); $("firstResult").classList.add("hidden"); }
+ if(S.media.length<3)return msg("Pick at least 3 photos/videos so FReek can start.");
+ S.ready=true;$("autoReadyStatus").classList.remove("hidden");
+ $("autoReadyStatus").textContent="Photos ready ✓ Waiting for the other player.";
+ if(S.activeSession)dbSaveMedia(S.activeSession.id,S.media);
+ csend({t:"ready",count:S.media.length,name:S.name});maybeStart();
 }
 function maybeStart(){
- if(S.ready && S.conn?.open){
-   csend({t:"ready",count:S.media.length});
-   if(S.role==="host" && S.gameStarted===false){
-     showFirstChoice();
-   }
+ if(S.ready&&S.conn?.open){
+  csend({t:"ready",count:S.media.length,name:S.name});
+  if(S.role==="host"&&!S.gameStarted){showFirstChoice();csend({t:"wheelReady"});}
+  updateFirstControls();
  }
 }
 function updateFirstControls(){
- $("firstMeBtn").textContent=S.name+" GOES FIRST";
- $("firstThemBtn").textContent=S.other+" GOES FIRST";
- const host=S.role==="host";
- $("firstMeBtn").disabled=!host;$("firstThemBtn").disabled=!host;$("spinBtn").disabled=!host;
+ $("wheelPlayer1").textContent=(S.role==="host"?S.name:S.other)+" • PLAYER 1";
+ $("wheelPlayer2").textContent=(S.role==="guest"?S.name:S.other)+" • PLAYER 2";
+ $("spinBtn").disabled=S.role!=="host"||!S.ready||!S.conn?.open||S.gameStarted;
+ $("spinWaiting").textContent=S.role==="host"?(S.ready&&S.conn?.open?"You control the spin.":"Waiting for both players…"):(S.gameStarted?"Wheel decided.":"Waiting for Player 1 to spin…");
 }
-function showFirstChoice(){
- updateFirstControls();
- show("startChoice",true);
- $("firstResult").classList.add("hidden");
-}
-function chooseFirst(who){
- if(S.role!=="host") return;
- if(!S.ready || !S.conn?.open) return msg("Both players must be connected and ready.");
- startGame(who==="me"?"host":"guest",false);
-}
+function showFirstChoice(){if(S.gameStarted)return;updateFirstControls();show("startChoice",true);$("firstResult").classList.add("hidden");}
 function spinFirst(){
- if(S.role!=="host" || S.gameStarted)return;
- const wheel=$("turnWheel"),pick=Math.random()<0.5?"host":"guest";
- const extra=(pick==="host"?45:225);
- const spin=1440+extra;
- wheel.style.transform=`rotate(${spin}deg)`;
- csend({t:"wheelSpin",spin,pick});
- setTimeout(()=>startGame(pick,true,spin),2750);
+ if(S.role!=="host"||S.gameStarted||!S.ready||!S.conn?.open)return;
+ const pick=Math.random()<0.5?"host":"guest",spin=1440+(pick==="host"?45:225);
+ $("turnWheel").style.transform=`rotate(${spin}deg)`;$("spinBtn").disabled=true;$("spinWaiting").textContent="Spinning…";
+ csend({t:"wheelSpin",spin,pick});setTimeout(()=>startGame(pick,true,spin),2750);
 }
 function startGame(first,fromWheel=false,spin=null){
  if(S.gameStarted)return;
  S.gameStarted=true;show("startChoice",false);
- const mine=(first===S.role);
- $("firstResult").classList.remove("hidden");
- $("firstResult").textContent=mine?S.name+" GOES FIRST 👀":S.other+" GOES FIRST 👀";
- setTimeout(()=>setTurn(mine),500);
- csend({t:"startGame",first,spin:fromWheel?spin:null});
+ const mine=first===S.role;$("firstResult").classList.remove("hidden");$("firstResult").textContent=mine?S.name+" goes first 👀":S.other+" goes first 👀";
+ setTimeout(()=>setTurn(mine),350);if(S.conn?.open)csend({t:"startGame",first,spin:fromWheel?spin:null});saveActiveSession();
 }
 function setTurn(me){
  S.turn=me?"me":"them";
@@ -744,26 +724,15 @@ function pickNumber(){
 }
 function renderFile(f,target){
  const box=$(target);if(!box||!f)return;
- box.innerHTML="<div class='previewEmpty'>Loading preview…</div>";
+ box.innerHTML="<div class='previewEmpty'>Loading your FReek…</div>";
  if((f.type||"").startsWith("video/")){
-   const u=URL.createObjectURL(f);S.urls.push(u);
-   const v=document.createElement("video");v.className="media";v.controls=true;v.playsInline=true;v.src=u;
-   v.onerror=()=>box.innerHTML="<div class='previewEmpty'>Video preview isn't available on this device.</div>";
-   box.innerHTML="";box.appendChild(v);return;
+  try{const u=URL.createObjectURL(f);S.urls.push(u);const v=document.createElement("video");v.className="media";v.controls=true;v.playsInline=true;v.preload="metadata";v.src=u;v.onerror=()=>box.innerHTML="<div class='previewEmpty'>Video preview unavailable.</div>";box.innerHTML="";box.appendChild(v)}catch(e){box.innerHTML="<div class='previewEmpty'>Video preview unavailable.</div>"};return;
  }
  const reader=new FileReader();
- reader.onload=()=>{
-   const img=document.createElement("img");img.className="media";img.alt="Selected FReek";img.src=reader.result;
-   img.onerror=()=>{const u=URL.createObjectURL(f);S.urls.push(u);img.src=u};
-   box.innerHTML="";box.appendChild(img);
- };
- reader.onerror=()=>{
-   const u=URL.createObjectURL(f);S.urls.push(u);
-   box.innerHTML=`<img class="media" src="${u}" alt="Selected FReek">`;
- };
+ reader.onload=e=>{const img=document.createElement("img");img.className="media";img.alt="Selected FReek";img.decoding="async";img.src=e.target.result;img.onerror=()=>{try{const u=URL.createObjectURL(f);S.urls.push(u);img.src=u}catch(_){box.innerHTML="<div class='previewEmpty'>Picture preview unavailable.</div>"}};box.innerHTML="";box.appendChild(img)};
+ reader.onerror=()=>{try{const u=URL.createObjectURL(f);S.urls.push(u);box.innerHTML=`<img class="media" src="${u}" alt="Selected FReek">`}catch(_){box.innerHTML="<div class='previewEmpty'>Picture preview unavailable.</div>"}};
  reader.readAsDataURL(f);
 }
-
 function sendFile(file, sneeked){
  if(!file)return;
  if(file.size>16*1024*1024)return msg("Beta limit: that item is over 16 MB. Try a smaller photo/video.");
@@ -808,11 +777,9 @@ function openSneek(){
      const vm=document.createElement("video");vm.src=u;vm.muted=true;vm.playsInline=true;wrap.appendChild(vm);
      vm.onerror=()=>{wrap.insertAdjacentHTML("afterbegin","<div class='notice'>Video preview unavailable</div>")};
    } else {
-     const im=document.createElement("img");im.alt="Sneek option";
-     im.onload=()=>{};im.onerror=()=>{
-       const reader=new FileReader();reader.onload=()=>{im.src=reader.result};reader.readAsDataURL(f);
-     };
-     const u=URL.createObjectURL(f);S.urls.push(u);im.src=u;wrap.appendChild(im);
+     const im=document.createElement("img");im.alt="Sneek option";const reader=new FileReader();
+     reader.onload=e=>im.src=e.target.result;reader.onerror=()=>{try{const u=URL.createObjectURL(f);S.urls.push(u);im.src=u}catch(_){}};
+     reader.readAsDataURL(f);wrap.appendChild(im);
    }
    wrap.appendChild(b);box.appendChild(wrap);
  });
@@ -867,14 +834,9 @@ function sendChat(){
  addChat(S.activeSession?.name||S.name,text,true);csend({t:"chat",name:(S.activeSession?.name||S.name),text});input.value="";input.focus();
 }
 $("chatInput").addEventListener("keydown",e=>{if(e.key==="Enter")sendChat()});
-document.addEventListener("visibilitychange",()=>{
- if(!document.hidden){
-   setTimeout(resumeFReek,250);
-   setTimeout(resumeFReek,1200);
- }
-});
-window.addEventListener("pageshow",()=>setTimeout(resumeFReek,300));
-window.addEventListener("focus",()=>setTimeout(resumeFReek,300));
+document.addEventListener("visibilitychange",()=>{if(!document.hidden){setTimeout(resumeFReek,150);setTimeout(resumeFReek,800);setTimeout(resumeFReek,2200)}});
+window.addEventListener("pageshow",()=>{setTimeout(resumeFReek,200);setTimeout(resumeFReek,1200)});
+window.addEventListener("focus",()=>setTimeout(resumeFReek,250));
 function copyInvite(){navigator.clipboard?.writeText(S.inviteUrl).then(()=>msg("Invite copied. Text it to your friend."))}
 async function shareInvite(){
  if(navigator.share){try{await navigator.share({title:"FReek",text:"Join my FReek 👀",url:S.inviteUrl})}catch(e){}}
@@ -888,11 +850,17 @@ function cleanup(){
 }
 
 function updatePool(files){
- S.media=Array.from(files||[]);
- $("poolInfo").textContent=S.media.length+" item"+(S.media.length===1?"":"s")+" selected.";
- $("readyBtn").disabled=S.media.length<3;
+ S.media=Array.from(files||[]);$("poolInfo").textContent=S.media.length+" item"+(S.media.length===1?"":"s")+" selected.";
+ if(S.activeSession)dbSaveMedia(S.activeSession.id,S.media);
+ if(S.media.length>=3)readyUp();
 }
 $("media").addEventListener("change",e=>updatePool(e.target.files));
+async function restoreSavedSessions(){
+ try{const raw=localStorage.getItem("freek.sessions");if(!raw)return;const saved=JSON.parse(raw);if(!Array.isArray(saved))return;
+ saved.forEach(x=>{if(!x?.id||S.sessions.some(s=>s.id===x.id))return;S.sessions.push({id:x.id,peer:null,conn:null,status:"saved",name:x.name||"Player",other:x.other||"Friend",sessionName:x.sessionName||("FReek "+x.id),newActivity:!!x.newActivity,chat:[],role:x.role||null})});
+ renderSessions();}catch(e){}
+}
+restoreSavedSessions();
 const params=new URLSearchParams(location.search);
 const incomingJoin=params.get("join");
 if(incomingJoin){
